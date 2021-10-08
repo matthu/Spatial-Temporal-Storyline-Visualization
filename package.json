@@ -43,6 +43,9 @@
     "quadprog": "^1.5.1",
     "simplify-js": "git+https://github.com/mourner/simplify-js.git",
     "snapsvg": "^0.5.1",
+    "webpack": "^4.46.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.2",
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
@@ -57,9 +60,6 @@
     "imports-loader": "^0.8.0",
     "mocha": "^7.1.2",
     "prettier": "1.18.2",
-    "pretty-quick": "^2.0.1",
-    "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.10",
-    "webpack-dev-server": "^3.11.0"
+    "pretty-quick": "^2.0.1"
   }
 }
