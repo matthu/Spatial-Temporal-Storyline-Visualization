@@ -1,4 +1,7 @@
 export class DisjointSet {
+  size: number;
+  fatherSet: number[];
+
   constructor(num) {
     this.size = num
     this.fatherSet = []
@@ -24,7 +27,7 @@ export class DisjointSet {
   }
 
   allElementInSet(n) {
-    let ans = []
+    let ans: number[] = []
     for (let i = 0; i < this.size; i++) {
       if (this.isInSameSet(n, i)) ans.push(i)
     }

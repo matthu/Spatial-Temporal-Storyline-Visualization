@@ -176,7 +176,7 @@ function dumpJsonCharacters(story) {
   let characters = story._characters
   for (let character of characters) {
     let timeStamps = story.getCharacterTimeRange(character)
-    let spansJson = []
+    let spansJson: any[] = []
     for (let timeStamp of timeStamps) {
       let [start, end] = timeStamp
       let sessionId = story.getSessionID(start, character)

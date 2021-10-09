@@ -258,8 +258,8 @@ export class Story {
       const sessionID = ++this._maxSessionID
       const locations = storyJson.Story.Locations
       const characters = storyJson.Story.Characters
-      if (locations.All) {
-        locations.All.push(sessionID)
+      if (locations['All']) {
+        locations['All'].push(sessionID)
       } else {
         locations['All'] = [sessionID]
       }

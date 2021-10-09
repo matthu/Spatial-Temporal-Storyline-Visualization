@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@types/mathjs": "^9.4.2",
+    "@types/snapsvg": "^0.5.1",
     "axios": "^0.21.1",
     "d3-fetch": "^1.1.2",
     "d3-scale": "^3.2.0",

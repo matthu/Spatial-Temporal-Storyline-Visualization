@@ -1,4 +1,4 @@
-import Snap from 'snapsvg'
+import * as Snap from 'snapsvg'
 
 export function drawSegmentPath(pathStr, defaultWidth = 2, hoverWidth = 4) {
   const svg = Snap('#mySvg')
