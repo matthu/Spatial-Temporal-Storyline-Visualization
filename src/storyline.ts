@@ -12,6 +12,16 @@ import { Story } from './data/story'
 import { logConstraintError } from './utils/logger'
 
 export default class iStoryline {
+  _pipeline: any;
+  _story: any;
+  _constraintStore: any;
+
+  orderGenerator: any;
+  alignGenerator: any;
+  compactGenerator: any;
+  renderGenerator: any;
+  transformGenerator: any;
+
   /**
    * Construct a iStoryline generator for a story.
    * Once the story changed, the generator should be re-constructed.

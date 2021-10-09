@@ -1,6 +1,11 @@
 import { Table } from '../data/table'
 import { STYLE_LABELS } from '../utils/CONSTANTS'
 export class StyleConfiger {
+  _style: Table;
+  _styleFlag: any[];
+  _moveMark: any[];
+  _styleY: any[];
+
   constructor(story, constraints) {
     const { style, styleFlag, moveMark, styleY } = this.genStyle(
       story,
@@ -40,7 +45,7 @@ export class StyleConfiger {
     return { style, styleFlag, moveMark, styleY }
   }
   ctrsFilter(octrs) {
-    let tctrs = []
+    let tctrs: any[] = []
     octrs.forEach(ctr => {
       for (let i = 0; i < STYLE_LABELS.length; i++) {
         if (STYLE_LABELS[i] === ctr.style) {
@@ -58,7 +63,7 @@ export class StyleConfiger {
     return 0
   }
   newArray(n, m) {
-    let ret = []
+    let ret: any[] = []
     for (let i = 0; i < n; i++) {
       ret[i] = []
       for (let j = 0; j < m; j++) ret[i][j] = 0

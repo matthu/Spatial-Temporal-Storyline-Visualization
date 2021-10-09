@@ -17,7 +17,7 @@ function getParams(story, constraints) {
   let sessionTable = story.getTable('session')
   let height = sortTable.rows
   let width = sortTable.cols
-  let characterIdInOrder = []
+  let characterIdInOrder: any[] = []
   // debugger
   let constraintsAlign = constraints.filter(constraint => {
     return constraint.style === 'Straighten'
@@ -26,7 +26,7 @@ function getParams(story, constraints) {
     constraint => constraint.style == 'Bend'
   )
   for (let time = 0; time < width; time++) {
-    let num = []
+    let num: any[] = []
     for (let id = 0; id < height; id++) {
       if (sortTable.value(id, time) !== 0) num.push(id)
     }
@@ -35,11 +35,11 @@ function getParams(story, constraints) {
     })
     characterIdInOrder.push(num)
   }
-  let rewardArr = []
+  let rewardArr: any[] = []
   for (let time = 0; time < width - 1; time++) {
-    let reward = []
+    let reward: any[] = []
     for (let cha = 0; cha < characterIdInOrder[time].length; cha++) {
-      let rewardInEachCha = []
+      let rewardInEachCha: any[] = []
       for (
         let chaInNextTime = 0;
         chaInNextTime < characterIdInOrder[time + 1].length;
@@ -122,13 +122,13 @@ function solveReward(id1, id2, time, sessionTable, sortTable) {
   let reward = 0
   let sessionId1 = sessionTable.value(id1, time)
   let sessionId2 = sessionTable.value(id2, time + 1)
-  let session1 = findChaInSessionAtTime(
+  let session1: any[] = findChaInSessionAtTime(
     sessionId1,
     time,
     sessionTable,
     sortTable
   )
-  let session2 = findChaInSessionAtTime(
+  let session2: any[] = findChaInSessionAtTime(
     sessionId2,
     time + 1,
     sessionTable,
@@ -148,7 +148,7 @@ function solveReward(id1, id2, time, sessionTable, sortTable) {
 }
 
 function findChaInSessionAtTime(sessionId, time, sessionTable, sortTable) {
-  let ans = []
+  let ans: any[] = []
   let height = sessionTable.rows
   for (let id = 0; id < height; id++)
     if (sessionTable.value(id, time) === sessionId) ans.push(id)
@@ -171,8 +171,8 @@ function findChaInSessionAtTime(sessionId, time, sessionTable, sortTable) {
  */
 
 export function longestCommonSubstring(list1Length, list2Length, reward) {
-  let totalReward = []
-  let direction = []
+  let totalReward: any[] = []
+  let direction: any[] = []
   reward.forEach(row => {
     totalReward.push([])
     direction.push([])
@@ -204,7 +204,7 @@ export function longestCommonSubstring(list1Length, list2Length, reward) {
       totalReward[i][j] = valueList[maxListArg]
     }
   }
-  let alignList = []
+  let alignList: any[] = []
   let leftHead = list1Length - 1
   let rightHead = list2Length - 1
   while (rightHead >= 0 && leftHead >= 0) {

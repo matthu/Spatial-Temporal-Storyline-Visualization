@@ -13,12 +13,12 @@ function getParam(story, constraints) {
   let sortTable = story.getTable('sort')
   let height = sessionTable.rows
   let width = sessionTable.cols
-  let characterIdInOrder = []
+  let characterIdInOrder: any[] = []
 
-  let sessionInOrder = []
-  let sessionAlignMaps = []
+  let sessionInOrder: any[] = []
+  let sessionAlignMaps: any[] = []
   for (let time = 0; time < width; time++) {
-    let num = []
+    let num: any[] = []
     for (let id = 0; id < height; id++) {
       if (sortTable.value(id, time) !== 0) num.push(id)
     }
@@ -91,7 +91,7 @@ function sessionId2CharactersInOrder(
   sessionId
 ) {
   let characterIdInOrderInThisTime = characterIdInOrder[time]
-  let ans = []
+  let ans: any[] = []
   for (let characterId of characterIdInOrderInThisTime) {
     if (sessionTable.value(characterId, time) === sessionId)
       ans.push(characterId)
@@ -145,7 +145,7 @@ function runAlgorithms(param) {
   } = param
   let ans = new Table()
   ans.resize(height, width, -1)
-  let slots = []
+  let slots: any[] = []
   sessionInOrder[0].forEach(sessionId => {
     slots.push([sessionId])
   })

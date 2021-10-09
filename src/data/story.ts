@@ -9,7 +9,25 @@ import {
 } from '../utils/io'
 
 export class Story {
+  _maxSessionID: number
+  _tableMap: Map<any, any>
+  _characters: string[]
+  _locations: string[]
+  _timeStamps: number[]
+  _positions: any[]
+  _paths: any[]
+
   constructor() {
+    this._maxSessionID = -1
+    this._tableMap = new Map()
+    this._tableMap.set('character', new Table())
+    this._tableMap.set('session', new Table())
+    this._tableMap.set('location', new Table())
+    this._characters = []
+    this._locations = []
+    this._timeStamps = []
+    this._positions = []
+    this._paths = []
     this.restore()
   }
 
@@ -100,7 +118,7 @@ export class Story {
    * @returns
    * - table: Table
    */
-  getTable(tableName) {
+  getTable(tableName: string) {
     return this._tableMap.get(tableName)
   }
 
@@ -145,8 +163,8 @@ export class Story {
    * - timeSteps: number[]
    */
   getTimeSteps(timeRange) {
-    let tmpTimeSteps = [],
-      timeSteps = []
+    let tmpTimeSteps: any[] = [],
+      timeSteps: any[] = []
     timeRange.forEach(timeSpan => {
       let l = -1,
         r = -1
@@ -180,12 +198,12 @@ export class Story {
    */
   addTimeStamp(timeStamp) {
     const storyJson = generateJSONFile(this)
-    const characters = storyJson.Story.Characters
+    const characters: any = storyJson.Story.Characters
     const maxTimeStamp = Math.max(...this._timeStamps)
     if (timeStamp < maxTimeStamp) {
       for (let name in characters) {
         const character = characters[name]
-        const _character = []
+        const _character: any[] = []
         character.forEach(_ => {
           const start = _['Start']
           const end = _['End']
@@ -319,7 +337,7 @@ export class Story {
     let timeSteps = this.getTimeSteps([timeSpan])
     let session = this.getTable('session')
     for (let i = 0; i < characters.length; i++) {
-      let character = characters[i]
+      let character: any = characters[i]
       if (typeof character === 'string') {
         character = this.getCharacterID(character)
       }
@@ -386,7 +404,7 @@ export class Story {
   getCharacterTimeRange(character) {
     character =
       typeof character === 'number' ? character : this.getCharacterID(character)
-    let timeRange = []
+    let timeRange: any[] = []
     if (character !== null) {
       for (let i = 0; i < this.getTableCols(); i++) {
         if (this._tableMap.get('character').value(character, i) === 1) {
@@ -449,7 +467,7 @@ export class Story {
    * - timeRange: timeSpan[]
    */
   getSessionTimeRange(sessionID) {
-    let timeSteps = []
+    let timeSteps: any[] = []
     for (let i = 0; i < this.getTableRows(); i++) {
       for (let j = 0; j < this.getTableCols(); j++) {
         if (
@@ -524,7 +542,7 @@ export class Story {
       location = this.getLocationID(location)
     }
     if (location !== null) {
-      let sessionIDs = new Set()
+      let sessionIDs = new Set<number>()
       for (let i = 0; i < this.getTableRows(); i++) {
         for (let j = 0; j < this.getTableCols(); j++) {
           if (

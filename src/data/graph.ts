@@ -19,6 +19,10 @@
  *  - LocationName: String
  */
 export class Graph {
+  _story: any
+  _storylines: any[]
+  _storylinePaths: any[]
+
   constructor(story) {
     this._story = story
     this._storylines = []
@@ -29,8 +33,8 @@ export class Graph {
     const rows = this.getTableRows()
     const cols = this.getTableCols()
     for (let row = 0; row < rows; row++) {
-      let segments = []
-      let segmentPaths = []
+      let segments: any[] = []
+      let segmentPaths: any[] = []
       for (let col = 0; col < cols; col++) {
         let characterStatus = characterTable.value(row, col)
         if (characterStatus > 0) {

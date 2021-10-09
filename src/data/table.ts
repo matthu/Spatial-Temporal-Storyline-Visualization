@@ -3,13 +3,14 @@ import { create, all } from "mathjs";
 const math = create(all, {});
 
 export class Table {
+  _mat: any;
   /**
    * Table for Generators
    * @param {null | Number | Array | DenseMatrix} param
    */
-  constructor(data) {
+  constructor(data?: any) {
     if (data) {
-      if (data.length) {
+      if (data.length && math && math.matrix) {
         this._mat = math.matrix(data);
       } else {
         this._mat = data;
@@ -41,7 +42,7 @@ export class Table {
    * @param {Number} col
    */
   value(row, col) {
-    return this.type === "matrix"
+    return this.type === "matrix" && math && math.index
       ? this._mat.subset(math.index(row, col))
       : this._mat;
   }
@@ -50,7 +51,7 @@ export class Table {
    * Obtain a independent copy of the table.
    */
   clone() {
-    const data = this.type === "matrix" ? math.clone(this.mat) : this.mat;
+    const data = this.type === "matrix" && math && math.clone ? math.clone(this.mat) : this.mat;
     return new Table(data);
   }
 
@@ -83,7 +84,7 @@ export class Table {
    * @param {Number | Array | DenseMatrix} colRange
    */
   subtable(rowRange, colRange) {
-    if (this._mat === null) return null;
+    if (this._mat === null || !math || !math.index) return null;
     const [_rowRange, _colRange] = this._translateRange(rowRange, colRange);
     const range = math.index(_rowRange, _colRange);
     const submat = this._mat.subset(range);
@@ -98,10 +99,10 @@ export class Table {
   resize(rows, cols, val = 0) {
     if (this.type === "matrix") {
       this._mat.resize([rows, cols]);
-    } else {
+    } else if (math && math.zeros && math.add) {
       const _zeroMat = math.zeros(rows, cols);
-      const _mat = math.add(_zeroMat, val);
-      if (this._mat) {
+      const _mat: any = math.add(_zeroMat, val);
+      if (this._mat && _mat.subset && math.index) {
         _mat.subset(math.index(0, 0), this.mat);
       }
       this._mat = _mat;
@@ -115,7 +116,7 @@ export class Table {
    * @param {Number | Array | DenseMatrix} mat
    */
   replace(rowRange, colRange, mat) {
-    if (this._mat === null) return null;
+    if (this._mat === null || !math || !math.index) return null;
     const [_rowRange, _colRange] = this._translateRange(rowRange, colRange);
     const range = math.index(_rowRange, _colRange);
     this._mat.subset(range, mat);
@@ -137,37 +138,37 @@ export class Table {
       this.resize(rows, cols, this._mat || 0);
     }
     let _zeroTable;
-    if (isColumn) {
+    if (isColumn && math.range && math.zeros) {
       const rowRange = math.range(0, this.rows);
       if (index < this.cols) {
         _zeroTable = new Table(math.zeros(this.rows, this.cols + 1));
-        const headRange = index === 0 ? 0 : math.range(0, index);
-        const headTable = this.subtable(rowRange, headRange);
-        const tailRange = math.range(index + 1, this.cols + 1);
-        const tailTable = this.subtable(rowRange, math.range(index, this.cols));
+        const headRange = index === 0 ? 0 : math?.range(0, index);
+        const headTable: any = this.subtable(rowRange, headRange);
+        const tailRange = math?.range(index + 1, this.cols + 1);
+        const tailTable: any = this.subtable(rowRange, math?.range(index, this.cols));
         if (index > 0) _zeroTable.replace(rowRange, headRange, headTable.mat);
         if (index < this.cols)
           _zeroTable.replace(rowRange, tailRange, tailTable.mat);
       } else {
-        _zeroTable = new Table(math.zeros(this.rows, index + 1));
-        const colRange = math.range(0, this.cols);
+        _zeroTable = new Table(math?.zeros(this.rows, index + 1));
+        const colRange = math?.range(0, this.cols);
         _zeroTable.replace(rowRange, colRange, this.mat);
       }
       _zeroTable.replace(rowRange, index, arr);
       this._mat = _zeroTable._mat;
-    } else {
-      const colRange = math.range(0, this.cols);
+    } else if (math.zeros && math.range) {
+      const colRange = math?.range(0, this.cols);
       if (index < this.rows) {
-        _zeroTable = new Table(math.zeros(this.rows + 1, this.cols));
-        const headRange = index === 0 ? 0 : math.range(0, index);
-        const headTable = this.subtable(headRange, colRange);
-        const tailRange = math.range(index + 1, this.rows + 1);
-        const tailTable = this.subtable(math.range(index, this.rows), colRange);
+        _zeroTable = new Table(math?.zeros(this.rows + 1, this.cols));
+        const headRange = index === 0 ? 0 : math?.range(0, index);
+        const headTable: any = this.subtable(headRange, colRange);
+        const tailRange = math?.range(index + 1, this.rows + 1);
+        const tailTable: any = this.subtable(math?.range(index, this.rows), colRange);
         if (index > 0) _zeroTable.replace(headRange, colRange, headTable.mat);
         if (index < this.rows)
           _zeroTable.replace(tailRange, colRange, tailTable.mat);
       } else {
-        _zeroTable = new Table(math.zeros(index + 1, this.cols));
+        _zeroTable = new Table(math?.zeros(index + 1, this.cols));
         const rowRange = math.range(0, this.rows);
         _zeroTable.replace(rowRange, colRange, this.mat);
       }
@@ -178,7 +179,7 @@ export class Table {
 
   addScalar(val) {
     if (this._mat === null) return null;
-    if (this.type === "matrix") {
+    if (this.type === "matrix" && math.add) {
       this._mat = math.add(this.mat, val);
     } else {
       this._mat += val;

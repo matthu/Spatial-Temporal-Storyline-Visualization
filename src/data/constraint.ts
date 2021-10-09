@@ -1,4 +1,6 @@
 export class ConstraintStore {
+  _constraints: any[]
+
   constructor() {
     this._constraints = []
     // Default scale constraint

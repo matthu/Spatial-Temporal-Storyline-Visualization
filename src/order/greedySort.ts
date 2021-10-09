@@ -17,10 +17,10 @@ function getParams(story, constraints) {
   const sessionTable = story.getTable('session')
   const charactersLength = story.getTableRows()
   const timeStepsLength = story.getTableCols()
-  const params = []
+  const params: any[] = []
   // Trasverse sessions
   for (let _step = 0; _step < timeStepsLength; _step++) {
-    const vertexs = []
+    const vertexs: any[] = []
     for (let _char = 0; _char < charactersLength; _char++) {
       const sessionID = sessionTable.value(_char, _step)
       const charName = story.characters[_char]
@@ -93,9 +93,9 @@ function runAlgorithm(params, characters) {
     }
   }
   // Update permutation
-  const ans = []
+  const ans: any[] = []
   characters.forEach(charName => {
-    const charOrders = []
+    const charOrders: any[] = []
     for (let col = 0; col < params.length; col++) {
       const vertexs = params[col][0]
       const _vertex = findCharacterVertex(charName, vertexs)
@@ -119,7 +119,7 @@ function runAlgorithm(params, characters) {
  * @return {Vertex[]} permutation of V2
  */
 function constrainedCrossingReduction(V1, V2, ctrs) {
-  let ans = []
+  let ans: any[] = []
   // Init orders
   V2.forEach(vertex => {
     vertex.list.sort(
@@ -142,8 +142,8 @@ function constrainedCrossingReduction(V1, V2, ctrs) {
     }
   }
   // Sort V2 to satisfy inter-group constraints
-  let C = filterInnerGroupConstraints(ctrs, V2)
-  let V = generateConstrainedVertexs(C)
+  let C: any[] = filterInnerGroupConstraints(ctrs, V2)
+  let V: any[] = generateConstrainedVertexs(C)
   let _V = generateUnconstrainedVertexs(V2, V)
   let [vertex1, vertex2] = findViolatedContraint(V, C, V1)
   while (vertex1 && vertex2) {
@@ -207,7 +207,7 @@ function findViolatedContraint(V, C, V1) {
 }
 
 function filterInnerGroupConstraints(C, V2) {
-  let interGroupCtrs = []
+  let interGroupCtrs: any[] = []
   for (let i = 0, len = C.length; i < len; i++) {
     const pair = C[i]
     const [srcVertRoot, srcVertIdx] = findRootCharacterVertex(
@@ -229,8 +229,8 @@ function filterInnerGroupConstraints(C, V2) {
 }
 
 function generateConstrainedVertexs(C) {
-  let V = []
-  let charsInV = []
+  let V: any[] = []
+  let charsInV: any[] = []
   C.forEach(pair => {
     if (pair.srcVertex && pair.endVertex) {
       if (pair.srcVertex.name !== pair.endVertex.name) {
@@ -254,7 +254,12 @@ function generateUnconstrainedVertexs(V2, V) {
 }
 
 class Vertex {
-  constructor(name, sessionID, order) {
+  name: string;
+  sessionID: number;
+  order: number;
+  list: any[];
+
+  constructor(name?: string, sessionID?: number, order?: number) {
     this.name = name || 'dummy' // storyline character name, only valid when list.length === 1
     this.sessionID = sessionID || 0 // storyline sessionID (must be positive)
     this.order = order || 0 // permutation starts from 0
@@ -302,6 +307,9 @@ class Vertex {
 
 // Src vertex must be ahead of end vertex
 class VertexPair {
+  srcVertex: Vertex;
+  endVertex: Vertex;
+
   constructor(srcVertex, endVertex) {
     this.srcVertex = srcVertex
     this.endVertex = endVertex

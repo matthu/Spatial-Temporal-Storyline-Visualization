@@ -1,6 +1,7 @@
+import { Story } from '../data/story'
 import { Table } from '../data/table'
 
-export function scale(story, constraints) {
+export function scale(story: Story, constraints: any[]) {
   const ctrs = constraints.filter(ctr => {
     return ctr.style === 'Scale'
   })
@@ -11,7 +12,7 @@ export function scale(story, constraints) {
   if (ctrs.length < 1) return position
   const { x0, y0, width, height, reserveRatio } = ctrs[ctrs.length - 1].param
   const { minX, maxX, minY, maxY } = getBoundary(story)
-  let pos = []
+  let pos: any[] = []
   let ratio = (maxY - minY) / (maxX - minX)
   // ratio = ratio < thres ? idealRatio : ratio;
   for (let i = 0, n = story.getTableRows(); i < n; i++) {
@@ -39,7 +40,7 @@ export function genNewPosition(story, pos) {
   story.cleanPositions()
   const character = story.getTable('character')
   const layout = story.getTable('layout')
-  let tpos = []
+  let tpos: any[] = []
   for (let i = 0; i < pos.length; i++) {
     tpos[i] = []
     for (let j = 0; j < pos[i].length; j++) {
@@ -90,7 +91,7 @@ export function genPath(story, constraints) {
   const character = story.getTable('character')
   const layout = story.getTable('layout')
   const positions = story.positions
-  let path = []
+  let path: any[] = []
   for (let i = 0, n = story.getTableRows(); i < n; i++) {
     path[i] = []
     for (let j = 0, m = story.getTableCols(); j < m; j++) {

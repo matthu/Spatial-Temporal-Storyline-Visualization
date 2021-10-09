@@ -4,6 +4,9 @@ import { Table } from '../data/table'
 import { STYLE_LABELS, BEZIER_SAMPLE_NODES } from '../utils/CONSTANTS'
 
 export class PathSmoother {
+  styleConfiger: StyleConfiger;
+  layoutRelaxer: LayoutRelaxer;
+
   constructor(story, constraints) {
     this.styleConfiger = new StyleConfiger(story, constraints)
     this.layoutRelaxer = new LayoutRelaxer(story, constraints)
@@ -16,8 +19,8 @@ export class PathSmoother {
     const charater = story.getTable('character')
     const { style, styleFlag, moveMark, styleY } = this.styleConfiger
     const renderX = this.layoutRelaxer.renderX
-    let pos = [],
-      tpos = []
+    let pos: any[] = [],
+      tpos: any[] = []
     for (let i = 0, n = story.getTableRows(); i < n; i++) {
       pos[i] = []
       tpos[i] = []
@@ -109,10 +112,10 @@ export class PathSmoother {
     }
   }
   linkGap(nodes, styles, flags, curFlags) {
-    let gapANodes = []
-    let gapBNodes = []
+    let gapANodes: any[] = []
+    let gapBNodes: any[] = []
     if (nodes[0][1] !== nodes[1][1]) {
-      let tmpNodes = []
+      let tmpNodes: any[] = []
       tmpNodes = this.bezierLinker(nodes)
       for (let k = 0; k < tmpNodes.length; k++) {
         if (k <= tmpNodes.length >> 1)
@@ -132,8 +135,8 @@ export class PathSmoother {
     return { gapANodes, gapBNodes }
   }
   bezierLinker(nodes, sampleRate = BEZIER_SAMPLE_NODES) {
-    let lineNodes = [],
-      p = []
+    let lineNodes: any[] = [],
+      p: any[] = []
     if (nodes.length === 2) {
       p[0] = [nodes[0][0], nodes[0][1]]
       p[1] = [(nodes[0][0] + nodes[1][0]) * 0.5, nodes[0][1]]
@@ -157,7 +160,7 @@ export class PathSmoother {
     return { lineNodes, curFlag }
   }
   zigzagLinker(nodes, flag = 1, length = 10, height = 4) {
-    let lineNodes = []
+    let lineNodes: any[] = []
 
     const tmpLength = nodes[1][0] - nodes[0][0]
     let curFlag = Math.ceil(tmpLength / length)
@@ -176,7 +179,7 @@ export class PathSmoother {
     return { lineNodes, curFlag }
   }
   waveLinker(nodes, flag = 1, length = 10, height = 4, sampleling = 2) {
-    let lineNodes = []
+    let lineNodes: any[] = []
 
     const tmpLength = nodes[1][0] - nodes[0][0]
     let curFlag = Math.ceil(tmpLength / length)
@@ -196,7 +199,7 @@ export class PathSmoother {
     return { lineNodes, curFlag }
   }
   bumpLinker(nodes, flag = 1, length = 10, height = 4) {
-    let lineNodes = []
+    let lineNodes: any[] = []
     const tmpLength = nodes[1][0] - nodes[0][0]
     let curFlag = Math.ceil(tmpLength / length)
     if (curFlag < 2) curFlag = 2
@@ -205,18 +208,18 @@ export class PathSmoother {
     for (let z = 0; z <= curFlag; z++) {
       lineNodes.push([
         nodes[0][0] + (tmpLength * z) / curFlag,
-        nodes[0][1] + height * (z & 1 ? 1 : -1) * flag * (z != 0),
+        nodes[0][1] + height * (z & 1 ? 1 : -1) * flag //* (z != 0),
       ])
       lineNodes.push([
         nodes[0][0] + (tmpLength * z) / curFlag,
-        nodes[0][1] + height * (z & 1 ? -1 : 1) * flag * (z != curFlag),
+        nodes[0][1] + height * (z & 1 ? -1 : 1) * flag //* (z != curFlag),
       ])
     }
 
     return { lineNodes, curFlag }
   }
   twineLinker(nodes, flag = 1, length = 15, height = 4, sampleling = 2) {
-    let lineNodes = []
+    let lineNodes: any[] = []
 
     const tmpLength = nodes[1][0] - nodes[0][0]
     let curFlag = Math.ceil(tmpLength / length)
@@ -237,7 +240,7 @@ export class PathSmoother {
     return { lineNodes, curFlag }
   }
   collideLinker(nodes, flag = 1, length = 50, height = 2) {
-    let lineNodes = []
+    let lineNodes: any[] = []
     const curFlag = 0
     lineNodes.push([nodes[0][0], nodes[0][1] + flag * height])
     lineNodes.push([nodes[1][0], nodes[1][1] + flag * height])
