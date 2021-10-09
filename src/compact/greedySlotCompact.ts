@@ -1,13 +1,14 @@
+import { Story } from '../data/story';
 import { Table } from '../data/table'
 import { DISTANCE_IN, DISTANCE_OUT } from '../utils/CONSTANTS'
 
-export function greedySlotCompact(story, constraints) {
+export function greedySlotCompact(story: Story, constraints) {
   const param = getParam(story, constraints)
   const layoutTable = runAlgorithms(param)
   story.setTable('layout', layoutTable)
 }
 
-function getParam(story, constraints) {
+function getParam(story: Story, constraints) {
   let alignTable = story.getTable('align')
   let sessionTable = story.getTable('session')
   let sortTable = story.getTable('sort')
@@ -123,7 +124,7 @@ function insert2Array(pos, array, element) {
   array.splice(pos, 0, element)
 }
 
-function sessionIdTime2SlotId(slots, sessionId, time) {
+function sessionIdTime2SlotId(slots, sessionId: number, time) {
   for (let i = 0; i < slots.length; i++) {
     if (slots[i][time] === sessionId) return i
   }

@@ -1,3 +1,4 @@
+import { Story } from '../data/story';
 import { Table } from '../data/table'
 import { ALPHA } from '../utils/CONSTANTS'
 
@@ -5,13 +6,13 @@ import { ALPHA } from '../utils/CONSTANTS'
  * @param {Story} story
  * @param {constraints} Object
  */
-export function greedyAlign(story, constraints) {
+export function greedyAlign(story: Story, constraints) {
   const params = getParams(story, constraints)
   const alignTable = runAlgorithm(params)
   story.setTable('align', alignTable)
 }
 
-function getParams(story, constraints) {
+function getParams(story: Story, constraints) {
   let sortTable = story.getTable('sort')
   let chaTable = story.getTable('character')
   let sessionTable = story.getTable('session')
@@ -147,7 +148,7 @@ function solveReward(id1, id2, time, sessionTable, sortTable) {
   return reward
 }
 
-function findChaInSessionAtTime(sessionId, time, sessionTable, sortTable) {
+function findChaInSessionAtTime(sessionId: number, time, sessionTable, sortTable) {
   let ans: any[] = []
   let height = sessionTable.rows
   for (let id = 0; id < height; id++)

@@ -1,4 +1,5 @@
 import xml2js from 'xml2js'
+import { Story, StoryJson } from '../data/story';
 
 export function parseXMLFile(xml, story) {
   story.restore()
@@ -150,16 +151,16 @@ export function dumpJSONFile(fileName, story) {
   downloadFile(fileName, JSON.stringify(storyJson))
 }
 
-export function generateJSONFile(story) {
+export function generateJSONFile(story: Story) {
   let locationsJson = dumpJsonLocation(story)
   let charactersJson = dumpJsonCharacters(story)
-  let storyJson = {
+  let storyJson: StoryJson = {
     Story: { Locations: locationsJson, Characters: charactersJson },
   }
   return storyJson
 }
 
-function dumpJsonLocation(story) {
+function dumpJsonLocation(story: Story) {
   let locationsJson = {}
   let locations = story._locations
   for (let location of locations) {
@@ -171,7 +172,7 @@ function dumpJsonLocation(story) {
   return locationsJson
 }
 
-function dumpJsonCharacters(story) {
+function dumpJsonCharacters(story: Story) {
   let charactersJson = {}
   let characters = story._characters
   for (let character of characters) {

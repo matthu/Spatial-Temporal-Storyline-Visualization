@@ -78,7 +78,7 @@ export class LayoutRelaxer {
 export class SplineTwister {
   data: any[];
 
-  constructor(story, renderX) {
+  constructor(story: Story, renderX) {
     const layoutTable = story.getTable('layout')
     this.data = []
     renderX.forEach((charXArr, charIdx) => {

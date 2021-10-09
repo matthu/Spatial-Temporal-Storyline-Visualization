@@ -8,6 +8,19 @@ import {
   generateJSONFile,
 } from '../utils/io'
 
+export interface StoryJson {
+  Story: {
+    Locations: {[name: string]: number[]}           // Location name to session ids
+    Characters: {[name: string]: CharactersJson[]}
+  }
+}
+
+export interface CharactersJson {
+  Start: number
+  End: number
+  Session: number
+}
+
 export class Story {
   _maxSessionID: number
   _tableMap: Map<any, any>
@@ -73,7 +86,7 @@ export class Story {
    * @param {string} fileType
    * @returns
    */
-  async loadFile(fileUrl) {
+  async loadFile(fileUrl: string) {
     const fileSeps = fileUrl.split('.')
     const fileType = fileSeps[fileSeps.length - 1]
     if (fileType === 'xml') {
@@ -92,7 +105,7 @@ export class Story {
    * @param {Object} json
    * @returns
    */
-  loadJson(json) {
+  loadJson(json: object) {
     parseJSONFile(json, this)
   }
 
@@ -102,7 +115,7 @@ export class Story {
    * @param {string} fileType
    * @returns
    */
-  dump(fileName, fileType) {
+  dump(fileName: string, fileType: 'json' | 'xml') {
     if (fileType === 'xml') {
       dumpXMLFile(fileName, this)
     } else if (fileType === 'json') {
@@ -127,7 +140,7 @@ export class Story {
    * @param {String} tableName
    * @param {Table} table
    */
-  setTable(tableName, table) {
+  setTable(tableName: string, table: Table) {
     this._tableMap.set(tableName, table)
   }
 
@@ -145,7 +158,7 @@ export class Story {
    * @returns
    * - timeStep: number
    */
-  getTimeStep(timeStamp) {
+  getTimeStep(timeStamp: number) {
     const len = this.getTableCols()
     if (len === 0 || timeStamp < this._timeStamps[0]) return null
     for (let i = 0; i < len; i++) {
@@ -162,7 +175,7 @@ export class Story {
    * @returns
    * - timeSteps: number[]
    */
-  getTimeSteps(timeRange) {
+  getTimeSteps(timeRange: number[][]) {
     let tmpTimeSteps: any[] = [],
       timeSteps: any[] = []
     timeRange.forEach(timeSpan => {
@@ -196,14 +209,14 @@ export class Story {
    * add timestamp to timestamps
    * @param {Number} timeStamp
    */
-  addTimeStamp(timeStamp) {
+  addTimeStamp(timeStamp: number) {
     const storyJson = generateJSONFile(this)
-    const characters: any = storyJson.Story.Characters
+    const characters = storyJson.Story.Characters
     const maxTimeStamp = Math.max(...this._timeStamps)
     if (timeStamp < maxTimeStamp) {
       for (let name in characters) {
         const character = characters[name]
-        const _character: any[] = []
+        const _character: CharactersJson[] = []
         character.forEach(_ => {
           const start = _['Start']
           const end = _['End']
@@ -228,7 +241,7 @@ export class Story {
         characters[name] = _character
       }
     } else if (timeStamp > maxTimeStamp) {
-      for (let character of characters) {
+      for (let character of Object.values(characters)) {
         character.push({
           Start: maxTimeStamp,
           End: timeStamp,
@@ -243,21 +256,21 @@ export class Story {
    * delete timestamp from timestamps
    * @param {Number} timeStamp
    */
-  deleteTimeStamp(timeStamp) {}
+  deleteTimeStamp(timeStamp: number) {}
 
   /**
    * add characters to the story
    * @param {String} characterName
    * @param {timeSpan[]} timeRange
    */
-  addCharacter(characterName, timeRange = []) {
+  addCharacter(characterName: string, timeRange: number[][] = []) {
     if (this._characters.indexOf(characterName) > -1) {
       this.changeCharacter(characterName, timeRange)
     } else {
       const storyJson = generateJSONFile(this)
       const sessionID = ++this._maxSessionID
       const locations = storyJson.Story.Locations
-      const characters = storyJson.Story.Characters
+      const characters: {[name: string]: CharactersJson[]} = storyJson.Story.Characters
       if (locations['All']) {
         locations['All'].push(sessionID)
       } else {
@@ -278,7 +291,7 @@ export class Story {
    * delete characters from the story
    * @param {String | Number} character
    */
-  deleteCharacter(character) {
+  deleteCharacter(character: string | number) {
     const characterName =
       typeof character === 'number'
         ? this.getCharacterName(character)
@@ -306,7 +319,7 @@ export class Story {
    * @param {String | Number} character
    * @param {timeSpan[]} timeRange
    */
-  changeCharacter(character, timeRange = []) {
+  changeCharacter(character: string | number, timeRange: number[][] = []) {
     const characterName =
       typeof character === 'number'
         ? this.getCharacterName(character)
@@ -324,7 +337,7 @@ export class Story {
    * @param {String | Number[]} characters
    * @param {timeSpan} timeSpan
    */
-  changeSession(sessionID, characters = [], timeSpan, isHardBoundary = false) {
+  changeSession(sessionID: number, characters: (string | number)[] = [], timeSpan: number[], isHardBoundary = false) {
     if (isHardBoundary) {
       const [start, end] = timeSpan
       this.addTimeStamp(start)
@@ -333,7 +346,7 @@ export class Story {
     this._changeSessionSoft(sessionID, characters, timeSpan)
   }
 
-  _changeSessionSoft(sessionID, characters = [], timeSpan) {
+  _changeSessionSoft(sessionID: number, characters: (string | number)[] = [], timeSpan: number[]) {
     let timeSteps = this.getTimeSteps([timeSpan])
     let session = this.getTable('session')
     for (let i = 0; i < characters.length; i++) {
@@ -354,7 +367,7 @@ export class Story {
    * @param {String} location
    * @param {Number[]} sessions
    */
-  changeLocation(location, sessions) {
+  changeLocation(location: string, sessions?, timeRange?) {
     if (this._locations.indexOf(location) < 0) {
       this._locations.push(location)
     }
@@ -365,7 +378,7 @@ export class Story {
     for (let i = 0, len = this.getTableRows(); i < len; i++) {
       for (let j = 0, len = this.getTableCols(); j < len; j++) {
         const sessionID = sessionTable.value(i, j)
-        if (sessions.indexOf(sessionID) > -1) {
+        if (sessions != null && sessions.indexOf(sessionID) > -1) {
           locationTable.replace(i, j, locationID)
         }
       }
@@ -444,7 +457,7 @@ export class Story {
    * @returns
    * - characterIDs: number[]
    */
-  getSessionCharacters(sessionID) {
+  getSessionCharacters(sessionID: number) {
     let characterIDs = new Set()
     for (let i = 0; i < this.getTableRows(); i++) {
       for (let j = 0; j < this.getTableCols(); j++) {
@@ -466,7 +479,7 @@ export class Story {
    * @returns
    * - timeRange: timeSpan[]
    */
-  getSessionTimeRange(sessionID) {
+  getSessionTimeRange(sessionID: number) {
     let timeSteps: any[] = []
     for (let i = 0; i < this.getTableRows(); i++) {
       for (let j = 0; j < this.getTableCols(); j++) {
@@ -537,17 +550,18 @@ export class Story {
    * @returns
    * - sessionIDs: number[]
    */
-  getLocationSessions(location) {
+  getLocationSessions(location: string, locationID?: number) {
     if (typeof location == 'string') {
-      location = this.getLocationID(location)
+      const newLocationID = this.getLocationID(location)
+      if (newLocationID != null) locationID = newLocationID
     }
-    if (location !== null) {
+    if (locationID !== null) {
       let sessionIDs = new Set<number>()
       for (let i = 0; i < this.getTableRows(); i++) {
         for (let j = 0; j < this.getTableCols(); j++) {
           if (
             this.getTable('character').value(i, j) == 1 &&
-            this.getTable('location').value(i, j) === location
+            this.getTable('location').value(i, j) === locationID
           ) {
             sessionIDs.add(this._tableMap.get('session').value(i, j))
           }

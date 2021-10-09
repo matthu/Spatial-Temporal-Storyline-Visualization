@@ -1,9 +1,10 @@
+import { Story } from '../data/story';
 import { logGeneratorError } from '../utils/logger'
 import { greedySlotCompact } from './greedySlotCompact'
 import { opCompact } from './opCompact'
 import { opSlotCompact } from './opSlotCompact'
 
-export function storyCompact(generator, story, constraints) {
+export function storyCompact(generator, story: Story, constraints) {
   switch (generator) {
     case 'GreedySlotCompact':
       greedySlotCompact(story, constraints)

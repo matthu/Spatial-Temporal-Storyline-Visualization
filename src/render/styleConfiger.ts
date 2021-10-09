@@ -1,3 +1,4 @@
+import { Story } from '../data/story';
 import { Table } from '../data/table'
 import { STYLE_LABELS } from '../utils/CONSTANTS'
 export class StyleConfiger {
@@ -6,7 +7,7 @@ export class StyleConfiger {
   _moveMark: any[];
   _styleY: any[];
 
-  constructor(story, constraints) {
+  constructor(story: Story, constraints) {
     const { style, styleFlag, moveMark, styleY } = this.genStyle(
       story,
       constraints
@@ -28,7 +29,7 @@ export class StyleConfiger {
   get styleY() {
     return this._styleY
   }
-  genStyle(story, oConstraints) {
+  genStyle(story: Story, oConstraints) {
     const constraints = this.ctrsFilter(oConstraints)
     const tstyle = this.newArray(story.getTableRows(), story.getTableCols())
     const tstyleFlag = this.newArray(story.getTableRows(), story.getTableCols())
@@ -70,10 +71,11 @@ export class StyleConfiger {
     }
     return ret
   }
-  _changeStyle(ctr, story, style, moveMark) {
+  _changeStyle(ctr, story: Story, style, moveMark) {
     const timesteps = story.getTimeSteps([ctr.timeSpan])
     ctr.names.forEach(name => {
       const id = story.getCharacterID(name)
+      if (id == null) return
       for (let i = 0; i < timesteps.length; i++) {
         const timestep = timesteps[i]
         style[id][timestep] = this.getStyleId(ctr.style)
@@ -86,7 +88,7 @@ export class StyleConfiger {
       }
     })
   }
-  _changeStyleY(ctr, story, styleFlag, styleY) {
+  _changeStyleY(ctr, story: Story, styleFlag, styleY) {
     const timesteps = story.getTimeSteps([ctr.timeSpan])
     if (timesteps.length <= 0) return
     const layout = story.getTable('layout')
@@ -101,6 +103,7 @@ export class StyleConfiger {
       avgY /= tot
       ctr.names.forEach(name => {
         const id = story.getCharacterID(name)
+        if (id == null) return
         const y = layout.value(id, timesteps[0])
         timesteps.forEach(timestep => {
           styleFlag[id][timestep] = y > avgY ? 1 : 0

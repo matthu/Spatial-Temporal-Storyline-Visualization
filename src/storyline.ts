@@ -5,16 +5,16 @@ import { storyCompact } from './compact/index'
 import { storyRender } from './render/index'
 import { storyTransform } from './transform/index'
 // Data structure
-import { ConstraintStore } from './data/constraint'
+import { ConstraintStore, ConstraintStyle } from './data/constraint'
 import { Graph } from './data/graph'
-import { Story } from './data/story'
+import { Story, StoryJson } from './data/story'
 // Utils
 import { logConstraintError } from './utils/logger'
 
 export default class iStoryline {
   _pipeline: any;
-  _story: any;
-  _constraintStore: any;
+  _story: Story;
+  _constraintStore: ConstraintStore;
 
   orderGenerator: any;
   alignGenerator: any;
@@ -49,8 +49,8 @@ export default class iStoryline {
    * @param {String} fileUrl
    * - "./data/JurassicPark.xml"
    */
-  async loadFile(fileUrl, fileType = 'xml') {
-    await this._story.loadFile(fileUrl, fileType)
+  async loadFile(fileUrl: string) {
+    await this._story.loadFile(fileUrl)
     return this._layout()
   }
 
@@ -60,7 +60,7 @@ export default class iStoryline {
    * @param {Object} storyJson
    * - https://github.com/tangtan/iStoryline.js/wiki/Story-Script
    */
-  load(storyJson) {
+  load(storyJson: StoryJson) {
     this._story.loadJson(storyJson)
     return this._layout()
   }
@@ -97,42 +97,42 @@ export default class iStoryline {
   }
 
   // Only enable download json file.
-  dump(fileName) {
+  dump(fileName: string) {
     this._story.dump(fileName, 'json')
   }
 
-  addCharacter(character, timeRange) {
+  addCharacter(character: string, timeRange) {
     this._story.addCharacter(character, timeRange)
     return this._layout()
   }
 
-  changeCharacter(character, timeRange) {
+  changeCharacter(character: string | number, timeRange) {
     this._story.changeCharacter(character, timeRange)
     return this._layout()
   }
 
-  deleteCharacter(character) {
+  deleteCharacter(character: string | number) {
     this._story.deleteCharacter(character)
     return this._layout()
   }
 
-  addSession(characters, timeSpan) {
+  addSession(characters: (string | number)[], timeSpan: number[]) {
     const newSessionID = this._story.getNewSessionID()
     this._story.changeSession(newSessionID, characters, timeSpan)
     return this._layout()
   }
 
-  removeSession(sessionID) {
-    this._story.deleteSession(sessionID)
-    return this._layout()
-  }
+  // removeSession(sessionID) {
+  //   this._story.deleteSession(sessionID)
+  //   return this._layout()
+  // }
 
-  addLocation(location, characters, timeRange) {
+  addLocation(location: string, characters, timeRange) {
     this._story.changeLocation(location, characters, timeRange)
     return this._layout()
   }
 
-  removeLocation(location) {
+  removeLocation(location: string) {
     this._story.changeLocation(location)
     return this._layout()
   }
@@ -153,7 +153,7 @@ export default class iStoryline {
    *
    * @return graph
    */
-  sort(names, timeSpan) {
+  sort(names: string[], timeSpan: number[]) {
     if (names.length > 1 && timeSpan.length === 2) {
       this._constraintStore.add(names, timeSpan, 'Sort', {})
     } else {
@@ -178,7 +178,7 @@ export default class iStoryline {
    *
    * @return graph
    */
-  bend(names, timeSpan) {
+  bend(names: string[], timeSpan: number[]) {
     if (
       names.length === 1 &&
       timeSpan.length === 2 &&
@@ -207,7 +207,7 @@ export default class iStoryline {
    *
    * @return graph
    */
-  straighten(names, timeSpan) {
+  straighten(names: string[], timeSpan: number[]) {
     if (
       names.length === 1 &&
       timeSpan.length === 2 &&
@@ -238,7 +238,7 @@ export default class iStoryline {
    *
    * @return graph
    */
-  compress(names, timeSpan, scale = 0.5) {
+  compress(names: string[], timeSpan: number[], scale: number = 0.5) {
     if (names.length === 2 && timeSpan.length === 2) {
       this._constraintStore.add(names, timeSpan, 'Compress', { scale: scale })
     } else {
@@ -265,7 +265,7 @@ export default class iStoryline {
    *
    * @return graph
    */
-  expand(names, timeSpan, scale = 2) {
+  expand(names: string[], timeSpan: number[], scale: number = 2) {
     if (names.length === 2 && timeSpan.length === 2) {
       this._constraintStore.add(names, timeSpan, 'Expand', { scale: scale })
     } else {
@@ -282,7 +282,7 @@ export default class iStoryline {
    *
    * @return graph
    */
-  space(intraSep, interSep) {
+  space(intraSep: number, interSep: number) {
     this._constraintStore.add([], [], 'Space', {
       intraSep: intraSep,
       interSep: interSep,
@@ -308,7 +308,7 @@ export default class iStoryline {
    *
    * @return graph
    */
-  adjust(names, timeSpan, path) {
+  adjust(names: string[], timeSpan: number[], path: string[]) {
     if (
       names.length === 1 &&
       timeSpan.length === 2 &&
@@ -339,7 +339,7 @@ export default class iStoryline {
    *
    * @return graph
    */
-  relate(names, timeSpan, style) {
+  relate(names: string[], timeSpan: number[], style: ConstraintStyle) {
     if (names.length === 2 && timeSpan.length === 2) {
       this._constraintStore.add(names, timeSpan, style, {})
     } else {
@@ -365,7 +365,7 @@ export default class iStoryline {
    *
    * @return graph
    */
-  stylish(names, timeSpan, style) {
+  stylish(names: string[], timeSpan: number[], style) {
     if (names.length === 1 && timeSpan.length === 2) {
       this._constraintStore.add(names, timeSpan, style, {})
     } else {
@@ -385,7 +385,7 @@ export default class iStoryline {
    *
    * @return graph
    */
-  reshape(upperPath = [], lowerPath = []) {
+  reshape(upperPath: string[] = [], lowerPath: string[] = []) {
     this._constraintStore.add([], [], 'Reshape', {
       upperPath: upperPath,
       lowerPath: lowerPath,
@@ -404,7 +404,7 @@ export default class iStoryline {
    *
    * @return graph
    */
-  scale(x0 = 0, y0 = 0, width = 1000, height = 372, reserveRatio = false) {
+  scale(x0: number = 0, y0: number = 0, width: number = 1000, height: number = 372, reserveRatio: boolean = false) {
     this._constraintStore.add([], [], 'Scale', {
       x0: x0,
       y0: y0,

@@ -1,5 +1,29 @@
+export interface Constraint {
+  names: string[];
+  timeSpan: number[], // Will only have two elements [number, number]
+  style: ConstraintStyle,
+  param: ConstraintParam,
+}
+
+export type ConstraintStyle = 'Twine' | 'Knot' | 'Collide' | 'Merge' | 'Split' | 'Scale' | 'Sort' |
+  'Bend' | 'Straighten' | 'Compress' | 'Expand' | 'Space' | 'Adjust' | 'Reshape';
+
+export interface ConstraintParam {
+  height?: number
+  reserveRatio?: boolean
+  width?: number
+  x0?: number
+  y0?: number
+  scale?: number
+  intraSep?: number
+  interSep?: number
+  path?: string[]
+  upperPath?: string[]
+  lowerPath?: string[]
+}
+
 export class ConstraintStore {
-  _constraints: any[]
+  _constraints: Constraint[]
 
   constructor() {
     this._constraints = []
@@ -17,7 +41,7 @@ export class ConstraintStore {
     return this._constraints
   }
 
-  add(names, timeSpan, style, param) {
+  add(names: string[], timeSpan: number[], style: ConstraintStyle, param: ConstraintParam) {
     this._constraints.push({
       names: names,
       timeSpan: timeSpan,

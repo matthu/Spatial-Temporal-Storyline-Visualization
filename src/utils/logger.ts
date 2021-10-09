@@ -1,3 +1,5 @@
+import { Story } from "../data/story";
+
 export function logConstraintError(type) {
   console.warn(`Invalid ${type} constraints.`)
 }
@@ -6,7 +8,7 @@ export function logGeneratorError(type) {
   console.warn(`Invalid ${type} generator.`)
 }
 
-export function logStoryInfo(story) {
+export function logStoryInfo(story: Story) {
   console.log(story)
   // story size
   const rows = story.getTableRows()

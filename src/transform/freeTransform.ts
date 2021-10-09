@@ -36,7 +36,7 @@ export function scale(story: Story, constraints: any[]) {
   return newPosition
 }
 
-export function genNewPosition(story, pos) {
+export function genNewPosition(story: Story, pos) {
   story.cleanPositions()
   const character = story.getTable('character')
   const layout = story.getTable('layout')
@@ -53,7 +53,7 @@ export function genNewPosition(story, pos) {
   return newPosition
 }
 
-export function getBoundary(story) {
+export function getBoundary(story: Story) {
   const position = story.getTable('position')
   const character = story.getTable('character')
   const layout = story.getTable('layout')
@@ -78,13 +78,13 @@ export function getBoundary(story) {
   return { minX, maxX, minY, maxY }
 }
 
-function freeTransform(story, constraints) {
+function freeTransform(story: Story, constraints) {
   const pathTable = genPath(story, constraints)
   story.setTable('path', pathTable)
   return pathTable
 }
 
-export function genPath(story, constraints) {
+export function genPath(story: Story, constraints) {
   story.cleanPaths()
   // const position = story.getTable('position')
   const position = scale(story, constraints)

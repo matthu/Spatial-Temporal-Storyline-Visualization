@@ -1,7 +1,8 @@
+import { Story } from '../data/story';
 import { Table } from '../data/table'
 import { ORDER_TIMES } from '../utils/CONSTANTS'
 
-export function greedySort(story, constraints) {
+export function greedySort(story: Story, constraints) {
   const params = getParams(story, constraints)
   const sortTable = runAlgorithm(params, story.characters)
   story.setTable('sort', sortTable)
@@ -13,7 +14,7 @@ export function greedySort(story, constraints) {
  * @param {Constraint[]} constraints
  * @return [V, C][]
  */
-function getParams(story, constraints) {
+function getParams(story: Story, constraints) {
   const sessionTable = story.getTable('session')
   const charactersLength = story.getTableRows()
   const timeStepsLength = story.getTableCols()

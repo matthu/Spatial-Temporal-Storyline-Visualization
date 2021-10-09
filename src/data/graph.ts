@@ -1,3 +1,5 @@
+import { Story } from "./story";
+
 /**
  * @types
  * Visual Space
@@ -19,11 +21,20 @@
  *  - LocationName: String
  */
 export class Graph {
-  _story: any
-  _storylines: any[]
-  _storylinePaths: any[]
+  _story: Story
+  _storylines: [number, number][][][]
+  /**
+   * Follows format [
+   *                  [
+   *                    [
+   *                      [number, number]
+   *                    ]
+   *                  ]
+   *                ]
+   */
+  _storylinePaths: string[][]
 
-  constructor(story) {
+  constructor(story: Story) {
     this._story = story
     this._storylines = []
     this._storylinePaths = []

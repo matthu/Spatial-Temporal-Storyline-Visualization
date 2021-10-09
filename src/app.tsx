@@ -24,7 +24,7 @@ export default function App() {
   main('JurassicParkTune.json')
   return (
     <div>
-      Hello Glitchy!
+      Spatial-Temporal Storyline Visualization
       <pre></pre>
     </div>
   )

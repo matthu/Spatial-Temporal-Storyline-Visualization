@@ -2,19 +2,20 @@ import { StyleConfiger } from './styleConfiger'
 import { LayoutRelaxer } from './layoutRelaxer'
 import { Table } from '../data/table'
 import { STYLE_LABELS, BEZIER_SAMPLE_NODES } from '../utils/CONSTANTS'
+import { Story } from '../data/story';
 
 export class PathSmoother {
   styleConfiger: StyleConfiger;
   layoutRelaxer: LayoutRelaxer;
 
-  constructor(story, constraints) {
+  constructor(story: Story, constraints) {
     this.styleConfiger = new StyleConfiger(story, constraints)
     this.layoutRelaxer = new LayoutRelaxer(story, constraints)
   }
-  genStyle(story, constraints) {
+  genStyle(story: Story, constraints) {
     return this.styleConfiger.style
   }
-  genPosition(story) {
+  genPosition(story: Story) {
     const layout = story.getTable('layout')
     const charater = story.getTable('character')
     const { style, styleFlag, moveMark, styleY } = this.styleConfiger
