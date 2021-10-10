@@ -23,12 +23,12 @@ export interface CharactersJson {
 
 export class Story {
   _maxSessionID: number
-  _tableMap: Map<any, any>
+  _tableMap: Map<string, Table>
   _characters: string[]
   _locations: string[]
   _timeStamps: number[]
-  _positions: any[]
-  _paths: any[]
+  _positions: number[][][]
+  _paths: string[]
 
   constructor() {
     this._maxSessionID = -1
@@ -93,7 +93,7 @@ export class Story {
       const xml = await d3Fetch.xml(fileUrl)
       parseXMLFile(xml, this)
     } else if (fileType === 'json') {
-      const json = await d3Fetch.json(fileUrl)
+      const json: any = await d3Fetch.json(fileUrl)
       parseJSONFile(json, this)
     } else {
       console.error('Wrong fileType!')
@@ -105,7 +105,7 @@ export class Story {
    * @param {Object} json
    * @returns
    */
-  loadJson(json: object) {
+  loadJson(json: any) {
     parseJSONFile(json, this)
   }
 
@@ -356,7 +356,7 @@ export class Story {
       }
       if (character !== null) {
         for (let j = 0; j < timeSteps.length; j++) {
-          session.replace(character, timeSteps[j], sessionID)
+          session?.replace(character, timeSteps[j], sessionID)
         }
       }
     }
@@ -367,7 +367,7 @@ export class Story {
    * @param {String} location
    * @param {Number[]} sessions
    */
-  changeLocation(location: string, sessions?, timeRange?) {
+  changeLocation(location: string, sessions?: number[], timeRange?: number[][]) {
     if (this._locations.indexOf(location) < 0) {
       this._locations.push(location)
     }
@@ -377,9 +377,9 @@ export class Story {
     const sessionTable = this.getTable('session')
     for (let i = 0, len = this.getTableRows(); i < len; i++) {
       for (let j = 0, len = this.getTableCols(); j < len; j++) {
-        const sessionID = sessionTable.value(i, j)
-        if (sessions != null && sessions.indexOf(sessionID) > -1) {
-          locationTable.replace(i, j, locationID)
+        const sessionID = sessionTable?.value(i, j)
+        if (sessions != null && sessions.indexOf(sessionID as number) > -1) {
+          locationTable?.replace(i, j, locationID)
         }
       }
     }
@@ -391,7 +391,7 @@ export class Story {
    * @returns
    * - name: string | null
    */
-  getCharacterName(characterID) {
+  getCharacterName(characterID: number) {
     return characterID < this._characters.length
       ? this._characters[characterID]
       : null
@@ -403,7 +403,7 @@ export class Story {
    * @returns
    * - ID: number | null
    */
-  getCharacterID(characterName) {
+  getCharacterID(characterName: string) {
     const characterID = this._characters.indexOf(characterName)
     return characterID > -1 ? characterID : null
   }
@@ -414,13 +414,13 @@ export class Story {
    * @returns
    * - timeRange: [[t1, t2], ..]
    */
-  getCharacterTimeRange(character) {
+  getCharacterTimeRange(character: string | number) {
     character =
-      typeof character === 'number' ? character : this.getCharacterID(character)
-    let timeRange: any[] = []
+      typeof character === 'number' ? character : this.getCharacterID(character) as number
+    let timeRange: number[][] = []
     if (character !== null) {
       for (let i = 0; i < this.getTableCols(); i++) {
-        if (this._tableMap.get('character').value(character, i) === 1) {
+        if (this._tableMap.get('character')?.value(character, i) === 1) {
           timeRange.push([this._timeStamps[i], this._timeStamps[i + 1]])
         }
       }
@@ -435,11 +435,11 @@ export class Story {
    * @returns
    * - ID: number
    */
-  getSessionID(timeStamp, characterName) {
+  getSessionID(timeStamp: number, characterName: string) {
     let timeStep = this.getTimeStep(timeStamp)
     let characterID = this.getCharacterID(characterName)
     if (timeStep !== null && characterID !== null) {
-      return this.getTable('session').value(characterID, timeStep)
+      return this.getTable('session')?.value(characterID, timeStep)
     }
     return null
   }
@@ -462,8 +462,8 @@ export class Story {
     for (let i = 0; i < this.getTableRows(); i++) {
       for (let j = 0; j < this.getTableCols(); j++) {
         if (
-          this.getTable('character').value(i, j) == 1 &&
-          this.getTable('session').value(i, j) === sessionID
+          this.getTable('character')?.value(i, j) == 1 &&
+          this.getTable('session')?.value(i, j) === sessionID
         ) {
           characterIDs.add(i)
           break
@@ -484,7 +484,7 @@ export class Story {
     for (let i = 0; i < this.getTableRows(); i++) {
       for (let j = 0; j < this.getTableCols(); j++) {
         if (
-          this.getTable('session').value(i, j) === sessionID &&
+          this.getTable('session')?.value(i, j) === sessionID &&
           timeSteps.indexOf(j) < 0
         ) {
           timeSteps.push(j)
@@ -503,7 +503,7 @@ export class Story {
    * @returns
    * - locationName: string
    */
-  getLocationName(locationID) {
+  getLocationName(locationID: number) {
     return locationID < this._locations.length
       ? this._locations[locationID]
       : null
@@ -515,7 +515,7 @@ export class Story {
    * @returns
    * - locationID: number
    */
-  getLocationID(locationName) {
+  getLocationID(locationName: string) {
     const locationID = this._locations.indexOf(locationName)
     return locationID > -1 ? locationID : null
   }
@@ -526,16 +526,16 @@ export class Story {
    * @returns
    * - characterIDs: number[]
    */
-  getLocationCharacters(location) {
+  getLocationCharacters(location: string | number) {
     if (typeof location == 'string') {
-      location = this.getLocationID(location)
+      location = this.getLocationID(location) as number
     }
     let characterIDs = new Set()
     for (let i = 0; i < this.getTableRows(); i++) {
       for (let j = 0; j < this.getTableCols(); j++) {
         if (
-          this._tableMap.get('character').value(i, j) == 1 &&
-          this._tableMap.get('location').value(i, j) === location
+          this._tableMap.get('character')?.value(i, j) == 1 &&
+          this._tableMap.get('location')?.value(i, j) === location
         ) {
           characterIDs.add(i)
         }
@@ -560,10 +560,10 @@ export class Story {
       for (let i = 0; i < this.getTableRows(); i++) {
         for (let j = 0; j < this.getTableCols(); j++) {
           if (
-            this.getTable('character').value(i, j) == 1 &&
-            this.getTable('location').value(i, j) === locationID
+            this.getTable('character')?.value(i, j) == 1 &&
+            this.getTable('location')?.value(i, j) === locationID
           ) {
-            sessionIDs.add(this._tableMap.get('session').value(i, j))
+            sessionIDs.add(this._tableMap.get('session')?.value(i, j) as number)
           }
         }
       }
@@ -579,11 +579,11 @@ export class Story {
   cleanPositions() {
     this._positions = []
   }
-  addPath(path) {
+  addPath(path: string) {
     this._paths.push(path)
     return this._paths.length - 1
   }
-  addPosition(pos) {
+  addPosition(pos: number[][]) {
     this._positions.push(pos)
     return this._positions.length - 1
   }

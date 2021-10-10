@@ -1,3 +1,6 @@
+import { Story } from "./story";
+import { Table } from "./table";
+
 export interface Constraint {
   names: string[];
   timeSpan: number[], // Will only have two elements [number, number]
@@ -20,6 +23,15 @@ export interface ConstraintParam {
   path?: string[]
   upperPath?: string[]
   lowerPath?: string[]
+  rewardArr?: any
+  characterIdInOrder?: number[][]
+  story?: Story
+  sessionTable?: Table
+  alignTable?: Table
+  sessionInOrder?: number[][]
+  sessionAlignMaps?: Map<any, any>[]
+  constraintsExpand?: Constraint[]
+  constraintsCompress?: Constraint[]
 }
 
 export class ConstraintStore {

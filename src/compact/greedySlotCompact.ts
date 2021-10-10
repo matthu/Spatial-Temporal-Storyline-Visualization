@@ -1,45 +1,53 @@
+import { Constraint, ConstraintParam } from '../data/constraint';
 import { Story } from '../data/story';
 import { Table } from '../data/table'
 import { DISTANCE_IN, DISTANCE_OUT } from '../utils/CONSTANTS'
 
-export function greedySlotCompact(story: Story, constraints) {
+export function greedySlotCompact(story: Story, constraints: Constraint[]) {
   const param = getParam(story, constraints)
-  const layoutTable = runAlgorithms(param)
-  story.setTable('layout', layoutTable)
+  if (param) {
+    const layoutTable = runAlgorithms(param)
+    if (layoutTable) {
+      story.setTable('layout', layoutTable)
+    }
+  }
 }
 
-function getParam(story: Story, constraints) {
+function getParam(story: Story, constraints: Constraint[]) {
   let alignTable = story.getTable('align')
   let sessionTable = story.getTable('session')
   let sortTable = story.getTable('sort')
-  let height = sessionTable.rows
-  let width = sessionTable.cols
+  let height = sessionTable?.rows
+  let width = sessionTable?.cols 
   let characterIdInOrder: any[] = []
 
   let sessionInOrder: any[] = []
   let sessionAlignMaps: any[] = []
+
+  if (!height || !width) return
+
   for (let time = 0; time < width; time++) {
     let num: any[] = []
     for (let id = 0; id < height; id++) {
-      if (sortTable.value(id, time) !== 0) num.push(id)
+      if (sortTable?.value(id, time) !== 0) num.push(id)
     }
     num.sort((a, b) => {
-      return sortTable.value(a, time) - sortTable.value(b, time)
+      return (sortTable?.value(a, time) as number) - (sortTable?.value(b, time) as number)
     })
     characterIdInOrder.push(num)
     let sessionInOrderSet = new Set()
-    for (let cha of num) sessionInOrderSet.add(sessionTable.value(cha, time))
+    for (let cha of num) sessionInOrderSet.add(sessionTable?.value(cha, time))
     sessionInOrder.push(Array.from(sessionInOrderSet))
     if (time == width - 1) continue // next, we deal with align
     let sessionAlignMap = new Map()
     let beAlignedSession = new Map() //sessionId 2 size, however don't use size now
     for (let characterId of num) {
       //num:characterIdInOrderInThisTime
-      const sessionId = sessionTable.value(characterId, time)
-      const alignCharacterId = alignTable.value(characterId, time)
+      const sessionId = sessionTable?.value(characterId, time) as number
+      const alignCharacterId = alignTable?.value(characterId, time) as number
       let alignSessionId = -1
       if (alignCharacterId !== -1)
-        alignSessionId = sessionTable.value(alignCharacterId, time + 1)
+        alignSessionId = sessionTable?.value(alignCharacterId, time + 1) as number
       if (alignSessionId === 0) alignSessionId = -1
       //bug
 
@@ -86,13 +94,13 @@ function getParam(story: Story, constraints) {
  * @returns {Number[]}
  */
 function sessionId2CharactersInOrder(
-  characterIdInOrder,
-  sessionTable,
-  time,
-  sessionId
+  characterIdInOrder: number[][],
+  sessionTable: Table,
+  time: number,
+  sessionId: number
 ) {
   let characterIdInOrderInThisTime = characterIdInOrder[time]
-  let ans: any[] = []
+  let ans: number[] = []
   for (let characterId of characterIdInOrderInThisTime) {
     if (sessionTable.value(characterId, time) === sessionId)
       ans.push(characterId)
@@ -100,7 +108,7 @@ function sessionId2CharactersInOrder(
   return ans
 }
 
-function calculateSlotHeight(slots, slotId, characterIdInOrder, sessionTable) {
+function calculateSlotHeight(slots: number[][], slotId: number, characterIdInOrder: number[][], sessionTable: Table) {
   let sum = 0
   for (let i = 0; i < slotId; i++) {
     let slot = slots[i]
@@ -119,19 +127,18 @@ function calculateSlotHeight(slots, slotId, characterIdInOrder, sessionTable) {
   return sum
 }
 
-function insert2Array(pos, array, element) {
-  //splice没有insert2Array的意思直接
+function insert2Array(pos: number, array: any[], element: any[]) {
   array.splice(pos, 0, element)
 }
 
-function sessionIdTime2SlotId(slots, sessionId: number, time) {
+function sessionIdTime2SlotId(slots: any[], sessionId: number, time: number) {
   for (let i = 0; i < slots.length; i++) {
     if (slots[i][time] === sessionId) return i
   }
   return -1
 }
 
-function runAlgorithms(param) {
+function runAlgorithms(param: ConstraintParam) {
   let {
     story,
     sessionTable,
@@ -144,12 +151,15 @@ function runAlgorithms(param) {
     constraintsExpand,
     constraintsCompress,
   } = param
+  if (!width || !height || !sessionAlignMaps || !sessionInOrder || !characterIdInOrder || !sessionTable || !alignTable || !story) return
   let ans = new Table()
   ans.resize(height, width, -1)
   let slots: any[] = []
-  sessionInOrder[0].forEach(sessionId => {
-    slots.push([sessionId])
-  })
+  if (sessionInOrder) {
+    sessionInOrder[0].forEach(sessionId => {
+      slots.push([sessionId])
+    })
+  }
   // Init slots
   // Insert session to slot
   for (let time = 1; time < width; time++) {
@@ -192,7 +202,7 @@ function runAlgorithms(param) {
       insert2Array(lastSlotId + 1, slots, slot)
     }
   }
-  let slotsOfCharacter = new Array(slots.length)
+  let slotsOfCharacter: number[][][] = new Array(slots.length)
   for (let i = 0; i < slotsOfCharacter.length; i++) slotsOfCharacter[i] = []
   for (let slotsId = 0; slotsId < slots.length; slotsId++)
     for (let time = 0; time < width; time++) {
@@ -219,7 +229,7 @@ function runAlgorithms(param) {
       ) {
         let Id = thisSlot[firstAlignCharacter]
         if (Id === -1) continue
-        let alignCharacterId = alignTable.value(Id, time)
+        let alignCharacterId = alignTable.value(Id, time) as number
         if (nextSlot.indexOf(alignCharacterId) !== -1) {
           firstAlignCharacterNum = firstAlignCharacter
           alignCharacterNumInNextTime = nextSlot.indexOf(alignCharacterId)
@@ -227,7 +237,6 @@ function runAlgorithms(param) {
         }
       }
       if (firstAlignCharacterNum === -1) continue
-      //在前面所有的加-1，在后面这个加-1
       if (firstAlignCharacterNum > alignCharacterNumInNextTime) {
         let loss = firstAlignCharacterNum - alignCharacterNumInNextTime
         for (; loss > 0; loss--) nextSlot.unshift(-1)
@@ -242,7 +251,7 @@ function runAlgorithms(param) {
         }
       }
     }
-  let baseHeightArray = new Array(slots.length)
+  let baseHeightArray: number[] = new Array(slots.length)
   for (
     let slotsOfCharacterId = 0;
     slotsOfCharacterId < slotsOfCharacter.length;
@@ -273,14 +282,14 @@ function runAlgorithms(param) {
         if (constraintsCompress && constraintsCompress.length > 0)
           isCompress = constraintsCompress.some(constraint => {
             idNum = constraint.names.indexOf(
-              story.getCharacterName(characterId)
+              story?.getCharacterName(characterId) as string
             )
             if (
               idNum !== -1 &&
               constraint.timeSpan[0] <= time &&
               constraint.timeSpan[1] >= time
             ) {
-              scale = constraint.param.scale
+              scale = constraint.param.scale as number
               return true
             }
             return false
@@ -288,14 +297,14 @@ function runAlgorithms(param) {
         if (constraintsExpand && constraintsExpand.length > 0)
           isExpand = constraintsExpand.some(constraint => {
             idNum = constraint.names.indexOf(
-              story.getCharacterName(characterId)
+              story?.getCharacterName(characterId) as string
             )
             if (
               idNum !== -1 &&
               constraint.timeSpan[0] <= time &&
               constraint.timeSpan[1] >= time
             ) {
-              scale = constraint.param.scale
+              scale = constraint.param.scale as number
               return true
             }
             return false

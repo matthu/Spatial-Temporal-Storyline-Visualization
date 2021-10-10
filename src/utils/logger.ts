@@ -1,10 +1,10 @@
 import { Story } from "../data/story";
 
-export function logConstraintError(type) {
+export function logConstraintError(type: string) {
   console.warn(`Invalid ${type} constraints.`)
 }
 
-export function logGeneratorError(type) {
+export function logGeneratorError(type: string) {
   console.warn(`Invalid ${type} generator.`)
 }
 
@@ -20,16 +20,16 @@ export function logStoryInfo(story: Story) {
   // story characters
   const charaTable = story.getTable('character')
   console.log(
-    `Character Table ${charaTable.rows}x${charaTable.cols}: ${charaTable.mat}`
+    `Character Table ${charaTable?.rows}x${charaTable?.cols}: ${charaTable?.mat}`
   )
   // story locations
   const locationTable = story.getTable('location')
   console.log(
-    `Location Table ${locationTable.rows}x${locationTable.cols}: ${locationTable.mat}`
+    `Location Table ${locationTable?.rows}x${locationTable?.cols}: ${locationTable?.mat}`
   )
   // story sessions
   const sessionTable = story.getTable('session')
   console.log(
-    `Session Table ${sessionTable.rows}x${sessionTable.cols}: ${sessionTable.mat}`
+    `Session Table ${sessionTable?.rows}x${sessionTable?.cols}: ${sessionTable?.mat}`
   )
 }

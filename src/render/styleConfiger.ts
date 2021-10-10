@@ -1,13 +1,15 @@
+import { Constraint } from '../data/constraint';
 import { Story } from '../data/story';
 import { Table } from '../data/table'
 import { STYLE_LABELS } from '../utils/CONSTANTS'
+
 export class StyleConfiger {
   _style: Table;
   _styleFlag: any[];
   _moveMark: any[];
   _styleY: any[];
 
-  constructor(story: Story, constraints) {
+  constructor(story: Story, constraints: Constraint[]) {
     const { style, styleFlag, moveMark, styleY } = this.genStyle(
       story,
       constraints
@@ -29,7 +31,7 @@ export class StyleConfiger {
   get styleY() {
     return this._styleY
   }
-  genStyle(story: Story, oConstraints) {
+  genStyle(story: Story, oConstraints: Constraint[]) {
     const constraints = this.ctrsFilter(oConstraints)
     const tstyle = this.newArray(story.getTableRows(), story.getTableCols())
     const tstyleFlag = this.newArray(story.getTableRows(), story.getTableCols())
@@ -45,7 +47,7 @@ export class StyleConfiger {
       styleY = tstyleY
     return { style, styleFlag, moveMark, styleY }
   }
-  ctrsFilter(octrs) {
+  ctrsFilter(octrs: Constraint[]) {
     let tctrs: any[] = []
     octrs.forEach(ctr => {
       for (let i = 0; i < STYLE_LABELS.length; i++) {
@@ -57,21 +59,21 @@ export class StyleConfiger {
     })
     return tctrs
   }
-  getStyleId(styleName) {
+  getStyleId(styleName: string) {
     for (let i = 0; i < STYLE_LABELS.length; i++) {
       if (styleName === STYLE_LABELS[i]) return i
     }
     return 0
   }
-  newArray(n, m) {
-    let ret: any[] = []
+  newArray(n: number, m: number) {
+    let ret: number[][] = []
     for (let i = 0; i < n; i++) {
       ret[i] = []
       for (let j = 0; j < m; j++) ret[i][j] = 0
     }
     return ret
   }
-  _changeStyle(ctr, story: Story, style, moveMark) {
+  _changeStyle(ctr: Constraint, story: Story, style: number[][], moveMark: number[][]) {
     const timesteps = story.getTimeSteps([ctr.timeSpan])
     ctr.names.forEach(name => {
       const id = story.getCharacterID(name)
@@ -88,15 +90,15 @@ export class StyleConfiger {
       }
     })
   }
-  _changeStyleY(ctr, story: Story, styleFlag, styleY) {
+  _changeStyleY(ctr: Constraint, story: Story, styleFlag: number[][], styleY: number[][]) {
     const timesteps = story.getTimeSteps([ctr.timeSpan])
     if (timesteps.length <= 0) return
     const layout = story.getTable('layout')
     let avgY = 0,
       tot = 0
     ctr.names.forEach(name => {
-      const id = story.getCharacterID(name)
-      avgY += layout.value(id, timesteps[0])
+      const id = story.getCharacterID(name) as number
+      avgY += layout?.value(id, timesteps[0]) as number
       tot += 1
     })
     if (tot > 0) {
@@ -104,7 +106,7 @@ export class StyleConfiger {
       ctr.names.forEach(name => {
         const id = story.getCharacterID(name)
         if (id == null) return
-        const y = layout.value(id, timesteps[0])
+        const y = layout?.value(id, timesteps[0]) as number
         timesteps.forEach(timestep => {
           styleFlag[id][timestep] = y > avgY ? 1 : 0
           styleY[id][timestep] = avgY

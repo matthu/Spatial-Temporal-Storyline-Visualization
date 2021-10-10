@@ -5,7 +5,7 @@ import { drawStoryline } from './utils/drawer'
 import iStoryline from './storyline'
 
 export default function App() {
-  async function main(fileName) {
+  async function main(fileName: string) {
     const iStorylineInstance = new iStoryline()
     const fileUrl = `../../data/${fileName.split('.')[1]}/${fileName}`
     let graph = await iStorylineInstance.loadFile(fileUrl)

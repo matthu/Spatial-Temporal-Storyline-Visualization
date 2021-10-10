@@ -1,8 +1,9 @@
+import { Constraint } from '../data/constraint';
 import { Story } from '../data/story';
 import { Table } from '../data/table'
 import { ORDER_TIMES } from '../utils/CONSTANTS'
 
-export function greedySort(story: Story, constraints) {
+export function greedySort(story: Story, constraints: Constraint[]) {
   const params = getParams(story, constraints)
   const sortTable = runAlgorithm(params, story.characters)
   story.setTable('sort', sortTable)
@@ -14,7 +15,7 @@ export function greedySort(story: Story, constraints) {
  * @param {Constraint[]} constraints
  * @return [V, C][]
  */
-function getParams(story: Story, constraints) {
+function getParams(story: Story, constraints: Constraint[]) {
   const sessionTable = story.getTable('session')
   const charactersLength = story.getTableRows()
   const timeStepsLength = story.getTableCols()
@@ -23,7 +24,7 @@ function getParams(story: Story, constraints) {
   for (let _step = 0; _step < timeStepsLength; _step++) {
     const vertexs: any[] = []
     for (let _char = 0; _char < charactersLength; _char++) {
-      const sessionID = sessionTable.value(_char, _step)
+      const sessionID = sessionTable?.value(_char, _step) as number
       const charName = story.characters[_char]
       if (sessionID > 0) {
         const _vertex = new Vertex(charName, sessionID, _char)
@@ -76,7 +77,7 @@ function getParams(story: Story, constraints) {
  * @param {string[]} characters
  * @return {Table} sortTable
  */
-function runAlgorithm(params, characters) {
+function runAlgorithm(params: any, characters: string[]) {
   for (let orderTime = 0; orderTime < ORDER_TIMES; orderTime++) {
     // Forward sorting
     for (let i = 0; i < params.length - 1; i++) {
@@ -119,7 +120,7 @@ function runAlgorithm(params, characters) {
  * @param {VertexPair[]} C constrained orders of V2
  * @return {Vertex[]} permutation of V2
  */
-function constrainedCrossingReduction(V1, V2, ctrs) {
+function constrainedCrossingReduction(V1: Vertex[], V2: Vertex[], ctrs: VertexPair[]) {
   let ans: any[] = []
   // Init orders
   V2.forEach(vertex => {
@@ -143,23 +144,23 @@ function constrainedCrossingReduction(V1, V2, ctrs) {
     }
   }
   // Sort V2 to satisfy inter-group constraints
-  let C: any[] = filterInnerGroupConstraints(ctrs, V2)
-  let V: any[] = generateConstrainedVertexs(C)
-  let _V = generateUnconstrainedVertexs(V2, V)
+  let C: VertexPair[] = filterInnerGroupConstraints(ctrs, V2)
+  let V: Vertex[] = generateConstrainedVertexs(C)
+  let _V: Vertex[] = generateUnconstrainedVertexs(V2, V)
   let [vertex1, vertex2] = findViolatedContraint(V, C, V1)
-  while (vertex1 && vertex2) {
+  while (vertex1 != null && vertex2 != null) {
     let _vertex1 = new Vertex()
     _vertex1.list = vertex1.list.concat(vertex2.list)
     C.forEach(vertexPair => {
-      if (
-        vertexPair.srcVertex.name === vertex2.name ||
-        vertexPair.srcVertex.name === vertex1.name
+      if ( 
+        vertexPair.srcVertex.name === vertex2?.name ||
+        vertexPair.srcVertex.name === vertex1?.name
       ) {
         vertexPair.srcVertex = _vertex1
       }
       if (
-        vertexPair.endVertex.name === vertex2.name ||
-        vertexPair.endVertex.name === vertex1.name
+        vertexPair.endVertex.name === vertex2?.name ||
+        vertexPair.endVertex.name === vertex1?.name
       ) {
         vertexPair.endVertex = _vertex1
       }
@@ -169,7 +170,7 @@ function constrainedCrossingReduction(V1, V2, ctrs) {
       vertexPair => vertexPair.srcVertex.name !== vertexPair.endVertex.name
     )
     V = V.filter(
-      vertex => vertex.name !== vertex2.name && vertex.name !== vertex1.name
+      vertex => vertex.name !== vertex2?.name && vertex.name !== vertex1?.name
     )
     if (_vertex1.hasConstraints(C)) {
       V.push(_vertex1)
@@ -179,7 +180,7 @@ function constrainedCrossingReduction(V1, V2, ctrs) {
     ;[vertex1, vertex2] = findViolatedContraint(V, C, V1)
   }
   // Sort by barycenter values
-  const VComp = _V.concat(V)
+  const VComp: Vertex[] = _V.concat(V)
   VComp.sort((a, b) => a.getBarycenterRoot(V1) - b.getBarycenterRoot(V1))
   VComp.forEach(vertex => {
     ans = ans.concat(vertex.list)
@@ -192,7 +193,7 @@ function constrainedCrossingReduction(V1, V2, ctrs) {
   })
 }
 
-function findViolatedContraint(V, C, V1) {
+function findViolatedContraint(V: Vertex[], C: VertexPair[], V1: Vertex[]) {
   for (let i = 0, len = C.length; i < len; i++) {
     const pair = C[i]
     if (
@@ -207,7 +208,7 @@ function findViolatedContraint(V, C, V1) {
   return [null, null]
 }
 
-function filterInnerGroupConstraints(C, V2) {
+function filterInnerGroupConstraints(C: VertexPair[], V2: Vertex[]) {
   let interGroupCtrs: any[] = []
   for (let i = 0, len = C.length; i < len; i++) {
     const pair = C[i]
@@ -229,7 +230,7 @@ function filterInnerGroupConstraints(C, V2) {
   return interGroupCtrs
 }
 
-function generateConstrainedVertexs(C) {
+function generateConstrainedVertexs(C: VertexPair[]) {
   let V: any[] = []
   let charsInV: any[] = []
   C.forEach(pair => {
@@ -249,7 +250,7 @@ function generateConstrainedVertexs(C) {
   return V
 }
 
-function generateUnconstrainedVertexs(V2, V) {
+function generateUnconstrainedVertexs(V2: Vertex[], V: Vertex[]) {
   const constrainedCharacters = V.map(_ => _.name)
   return V2.filter(vertex => constrainedCharacters.indexOf(vertex.name) === -1)
 }
@@ -268,7 +269,7 @@ class Vertex {
   }
 
   // The way to calculate Barycenter has a significant impact on sorting results.
-  getBarycenterRoot(vertexs) {
+  getBarycenterRoot(vertexs: Vertex[]) {
     const _list = this.list.map(_ => findCharacterVertex(_.name, vertexs))
     let barycenter = 0
     _list.forEach(vertex => {
@@ -277,12 +278,12 @@ class Vertex {
     return barycenter / this.degree
   }
 
-  getBarycenterLeaf(vertexs) {
+  getBarycenterLeaf(vertexs: Vertex[]) {
     const vertex = findCharacterVertex(this.name, vertexs)
     return vertex ? vertex.order : this.order
   }
 
-  hasConstraints(C) {
+  hasConstraints(C: VertexPair[]) {
     for (let i = 0, len = C.length; i < len; i++) {
       const pair = C[i]
       if (
@@ -311,13 +312,13 @@ class VertexPair {
   srcVertex: Vertex;
   endVertex: Vertex;
 
-  constructor(srcVertex, endVertex) {
+  constructor(srcVertex: Vertex, endVertex: Vertex) {
     this.srcVertex = srcVertex
     this.endVertex = endVertex
   }
 }
 
-function findCharacterVertex(char, V) {
+function findCharacterVertex(char: string, V: Vertex[]) {
   for (let i = 0; i < V.length; i++) {
     for (let j = 0; j < V[i].list.length; j++) {
       if (V[i].list[j].name === char) {
@@ -328,13 +329,13 @@ function findCharacterVertex(char, V) {
   return null
 }
 
-function findRootCharacterVertex(char, V) {
+function findRootCharacterVertex(char: string, V: Vertex[]) {
   for (let i = 0; i < V.length; i++) {
     for (let j = 0; j < V[i].list.length; j++) {
       if (V[i].list[j].name === char) {
-        return [V[i], j]
+        return [V[i], j] as [Vertex, number]
       }
     }
   }
-  return [null, -1]
+  return [null, -1] as [null, number]
 }

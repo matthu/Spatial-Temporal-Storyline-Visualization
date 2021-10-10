@@ -1,9 +1,10 @@
-import { create, all } from "mathjs";
+import { create, all, Matrix, typeOf } from "mathjs";
 
 const math = create(all, {});
 
 export class Table {
-  _mat: any;
+  _mat: Matrix | number;
+
   /**
    * Table for Generators
    * @param {null | Number | Array | DenseMatrix} param
@@ -16,7 +17,7 @@ export class Table {
         this._mat = data;
       }
     } else {
-      this._mat = null;
+      this._mat = null as any;
     }
   }
 
@@ -25,15 +26,15 @@ export class Table {
   }
 
   get rows() {
-    return this._mat ? (this._mat.type ? this._mat.size()[0] : 1) : 0;
+    return this._mat ? (typeOf(this._mat) === "Matrix" && (this._mat as Matrix).type ? (this._mat as Matrix).size()[0] : 1) : 0;
   }
 
   get cols() {
-    return this._mat ? (this._mat.type ? this._mat.size()[1] : 1) : 0;
+    return this._mat ? (typeOf(this._mat) === "Matrix" && (this._mat as Matrix).type ? (this._mat as Matrix).size()[1] : 1) : 0;
   }
 
   get type() {
-    return this._mat ? (this._mat.type ? "matrix" : typeof this._mat) : null;
+    return this._mat ? (typeOf(this._mat) === "Matrix" ? "matrix" : typeof this._mat) : null;
   }
 
   /**
@@ -41,10 +42,10 @@ export class Table {
    * @param {Number} row
    * @param {Number} col
    */
-  value(row, col) {
-    return this.type === "matrix" && math && math.index
-      ? this._mat.subset(math.index(row, col))
-      : this._mat;
+  value(row: number, col: number) {
+    return this.type === "matrix" && math && math.index && this._mat
+      ? (this._mat as Matrix).subset(math.index(row, col))
+      : this._mat as number;
   }
 
   /**
@@ -60,19 +61,19 @@ export class Table {
    * @param {Number | Array | DenseMatrix} rowRange
    * @param {Number | Array | DenseMatrix} colRange
    */
-  _translateRange(rowRange, colRange) {
+  _translateRange(rowRange: number | number[] | Matrix, colRange: number | number[] | Matrix) {
     let _rowRange = rowRange;
-    if (rowRange.length && rowRange.length === 0) {
+    if (rowRange instanceof Array && rowRange.length && rowRange.length === 0) {
       _rowRange = 0;
     }
-    if (rowRange.type && rowRange.size()[0] === 0) {
+    if (typeOf(rowRange) === "Matrix" && (rowRange as any).type && (rowRange as any).size()[0] === 0) {
       _rowRange = 0;
     }
     let _colRange = colRange;
-    if (colRange.length && colRange.length === 0) {
+    if (colRange instanceof Array && colRange.length && colRange.length === 0) {
       _colRange = 0;
     }
-    if (colRange.type && colRange.size()[0] === 0) {
+    if (typeOf(colRange) === "Matrix" && (colRange as any).type && (colRange as any).size()[0] === 0) {
       _colRange = 0;
     }
     return [_rowRange, _colRange];
@@ -83,11 +84,11 @@ export class Table {
    * @param {Number | Array | DenseMatrix} rowRange
    * @param {Number | Array | DenseMatrix} colRange
    */
-  subtable(rowRange, colRange) {
+  subtable(rowRange: number | number[] | Matrix, colRange: number | number[] | Matrix) {
     if (this._mat === null || !math || !math.index) return null;
     const [_rowRange, _colRange] = this._translateRange(rowRange, colRange);
     const range = math.index(_rowRange, _colRange);
-    const submat = this._mat.subset(range);
+    const submat = (this._mat as Matrix).subset(range);
     return new Table(submat);
   }
 
@@ -96,9 +97,9 @@ export class Table {
    * @param {Number} rows
    * @param {Number} cols
    */
-  resize(rows, cols, val = 0) {
-    if (this.type === "matrix") {
-      this._mat.resize([rows, cols]);
+  resize(rows: number, cols: number, val: number = 0) {
+    if (this.type === "matrix" && this._mat) {
+      (this._mat as Matrix).resize([rows, cols]);
     } else if (math && math.zeros && math.add) {
       const _zeroMat = math.zeros(rows, cols);
       const _mat: any = math.add(_zeroMat, val);
@@ -115,11 +116,11 @@ export class Table {
    * @param {Number | Array | DenseMatrix} colRange
    * @param {Number | Array | DenseMatrix} mat
    */
-  replace(rowRange, colRange, mat) {
+  replace(rowRange: number | number[] | Matrix, colRange: number | number[] | Matrix, mat: number | number[] | Matrix) {
     if (this._mat === null || !math || !math.index) return null;
     const [_rowRange, _colRange] = this._translateRange(rowRange, colRange);
     const range = math.index(_rowRange, _colRange);
-    this._mat.subset(range, mat);
+    (this._mat as Matrix).subset(range, mat);
   }
 
   /**
@@ -128,14 +129,14 @@ export class Table {
    * @param {Array} arr
    * @param {Boolean} isColumn
    */
-  extend(index, arr, isColumn = false) {
+  extend(index: number, arr: number[], isColumn = false) {
     // A scalar or null must be resized before beding extended.
     // console.log(this._mat, this.type);
-    if (this._mat === null || this.type === "number") {
+    if (this._mat === null || this.type === "number" || this._mat instanceof Number) {
       const rows = isColumn ? arr.length : 1;
       const cols = isColumn ? 1 : arr.length;
       // console.log(rows, cols, this._mat);
-      this.resize(rows, cols, this._mat || 0);
+      this.resize(rows, cols, (this._mat as any) || 0);
     }
     let _zeroTable;
     if (isColumn && math.range && math.zeros) {
@@ -177,12 +178,12 @@ export class Table {
     }
   }
 
-  addScalar(val) {
+  addScalar(val: number) {
     if (this._mat === null) return null;
-    if (this.type === "matrix" && math.add) {
-      this._mat = math.add(this.mat, val);
+    if (this.type === "matrix" && math.add && this.mat) {
+      this._mat = math.add(this.mat, val) as any;
     } else {
-      this._mat += val;
+      (this._mat as number) += val;
     }
   }
 }

@@ -1,8 +1,11 @@
+import { Constraint } from '../data/constraint';
 import { Story } from '../data/story'
 import { logGeneratorError } from '../utils/logger'
 import { freeTransform } from './freeTransform'
 
-export function storyTransform(generator, story: Story, constraints) {
+export type TransformGenerator = 'FreeTransform';
+
+export function storyTransform(generator: TransformGenerator, story: Story, constraints: Constraint[]) {
   switch (generator) {
     case 'FreeTransform':
       freeTransform(story, constraints)

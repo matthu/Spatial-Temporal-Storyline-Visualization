@@ -1,3 +1,4 @@
+import { Constraint, ConstraintParam } from '../data/constraint';
 import { Story } from '../data/story';
 import { Table } from '../data/table'
 import { ALPHA } from '../utils/CONSTANTS'
@@ -6,19 +7,24 @@ import { ALPHA } from '../utils/CONSTANTS'
  * @param {Story} story
  * @param {constraints} Object
  */
-export function greedyAlign(story: Story, constraints) {
+export function greedyAlign(story: Story, constraints: Constraint[]) {
   const params = getParams(story, constraints)
-  const alignTable = runAlgorithm(params)
-  story.setTable('align', alignTable)
+  if (params) {
+    const alignTable = runAlgorithm(params)
+    story.setTable('align', alignTable)
+  }
 }
 
-function getParams(story: Story, constraints) {
+function getParams(story: Story, constraints: Constraint[]) {
   let sortTable = story.getTable('sort')
   let chaTable = story.getTable('character')
   let sessionTable = story.getTable('session')
-  let height = sortTable.rows
-  let width = sortTable.cols
-  let characterIdInOrder: any[] = []
+  let height = sortTable?.rows
+  let width = sortTable?.cols
+  let characterIdInOrder: number[][] = []
+
+  if (!height || !width || !sessionTable || !sortTable) return
+
   // debugger
   let constraintsAlign = constraints.filter(constraint => {
     return constraint.style === 'Straighten'
@@ -27,12 +33,12 @@ function getParams(story: Story, constraints) {
     constraint => constraint.style == 'Bend'
   )
   for (let time = 0; time < width; time++) {
-    let num: any[] = []
+    let num: number[] = []
     for (let id = 0; id < height; id++) {
-      if (sortTable.value(id, time) !== 0) num.push(id)
+      if (sortTable?.value(id, time) !== 0) num.push(id)
     }
     num.sort((a, b) => {
-      return sortTable.value(a, time) - sortTable.value(b, time)
+      return (sortTable?.value(a, time) as number) - (sortTable?.value(b, time) as number)
     })
     characterIdInOrder.push(num)
   }
@@ -88,9 +94,10 @@ function getParams(story: Story, constraints) {
   }
 }
 
-function runAlgorithm(param) {
+function runAlgorithm(param: ConstraintParam) {
   let ans = new Table(-1)
   let { height, width, rewardArr, characterIdInOrder } = param
+  if (!height || !width || !characterIdInOrder) return ans;
   ans.resize(height, width, -1)
   for (let time = 0; time < width - 1; time++) {
     let alignAns
@@ -119,10 +126,10 @@ function runAlgorithm(param) {
  * @param {Table} sortTable sortTable
  * @returns {Number} reward
  */
-function solveReward(id1, id2, time, sessionTable, sortTable) {
+function solveReward(id1: number, id2: number, time: number, sessionTable: Table, sortTable: Table) {
   let reward = 0
-  let sessionId1 = sessionTable.value(id1, time)
-  let sessionId2 = sessionTable.value(id2, time + 1)
+  let sessionId1 = sessionTable.value(id1, time) as number
+  let sessionId2 = sessionTable.value(id2, time + 1) as number
   let session1: any[] = findChaInSessionAtTime(
     sessionId1,
     time,
@@ -148,13 +155,13 @@ function solveReward(id1, id2, time, sessionTable, sortTable) {
   return reward
 }
 
-function findChaInSessionAtTime(sessionId: number, time, sessionTable, sortTable) {
+function findChaInSessionAtTime(sessionId: number, time: number, sessionTable: Table, sortTable: Table) {
   let ans: any[] = []
   let height = sessionTable.rows
   for (let id = 0; id < height; id++)
     if (sessionTable.value(id, time) === sessionId) ans.push(id)
   ans.sort((a, b) => {
-    return sortTable.value(a, time) - sortTable.value(b, time)
+    return (sortTable.value(a, time) as number) - (sortTable.value(b, time) as number)
   })
   return ans
 }
@@ -171,7 +178,7 @@ function findChaInSessionAtTime(sessionId: number, time, sessionTable, sortTable
  * let reward=[[1,1,1],[1,1,1],[1,1,1],[1,1,1]]
  */
 
-export function longestCommonSubstring(list1Length, list2Length, reward) {
+export function longestCommonSubstring(list1Length: number, list2Length: number, reward: number[][]) {
   let totalReward: any[] = []
   let direction: any[] = []
   reward.forEach(row => {
@@ -224,7 +231,7 @@ export function longestCommonSubstring(list1Length, list2Length, reward) {
   return alignList
 }
 
-function maxArg(list) {
+function maxArg(list: number[]) {
   let ans = -1
   let maxValue = Number.MIN_SAFE_INTEGER
   for (let i = 0; i < list.length; i++) {

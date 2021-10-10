@@ -1,8 +1,11 @@
+import { Constraint } from '../data/constraint';
 import { Story } from '../data/story';
 import { logGeneratorError } from '../utils/logger'
 import { smoothRender } from './smoothRender'
 
-export function storyRender(generator, story: Story, constraints) {
+export type RenderGenerator = 'SmoothRender';
+
+export function storyRender(generator: RenderGenerator, story: Story, constraints: Constraint[]) {
   switch (generator) {
     case 'SmoothRender':
       smoothRender(story, constraints)

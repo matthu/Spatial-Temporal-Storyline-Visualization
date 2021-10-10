@@ -22,7 +22,7 @@ import { Story } from "./story";
  */
 export class Graph {
   _story: Story
-  _storylines: [number, number][][][]
+  _storylines: number[][][][]
   /**
    * Follows format [
    *                  [
@@ -47,12 +47,12 @@ export class Graph {
       let segments: any[] = []
       let segmentPaths: any[] = []
       for (let col = 0; col < cols; col++) {
-        let characterStatus = characterTable.value(row, col)
-        if (characterStatus > 0) {
-          let positionId = positionTable.value(row, col)
+        let characterStatus = characterTable?.value(row, col)
+        if (characterStatus && characterStatus > 0) {
+          let positionId = positionTable?.value(row, col) as number
           let segment = this._story._positions[positionId]
           segments.push(segment)
-          let pathId = pathTable.value(row, col)
+          let pathId = pathTable?.value(row, col) as number
           let path = this._story._paths[pathId]
           segmentPaths.push(path)
         }
@@ -82,7 +82,7 @@ export class Graph {
     return this._storylinePaths
   }
 
-  getTable(tableName) {
+  getTable(tableName: string) {
     return this._story.getTable(tableName)
   }
 
@@ -102,7 +102,7 @@ export class Graph {
    *
    * @return characterID
    */
-  getCharacterID(x, y) {}
+  getCharacterID(x: number, y: number) {}
 
   /**
    * Get the character name according to the given position.
@@ -112,7 +112,7 @@ export class Graph {
    *
    * @return characterName
    */
-  getCharacterName(x, y) {}
+  getCharacterName(x: number, y: number) {}
 
   /**
    * Get the location ID according to the given position.
@@ -122,7 +122,7 @@ export class Graph {
    *
    * @return locationID
    */
-  getLocationID(x, y) {}
+  getLocationID(x: number, y: number) {}
 
   /**
    * Get the location name according to the given position.
@@ -132,7 +132,7 @@ export class Graph {
    *
    * @return locationName
    */
-  getLocationName(x, y) {}
+  getLocationName(x: number, y: number) {}
 
   /**
    * Get the timeStep according to the given position.
@@ -142,7 +142,7 @@ export class Graph {
    *
    * @return timeStep
    */
-  getTimeStep(x, y) {}
+  getTimeStep(x: number, y: number) {}
 
   /**
    * Get the timeSpan according to the given position.
@@ -152,7 +152,7 @@ export class Graph {
    *
    * @return timeStep
    */
-  getTimeSpan(x, y) {}
+  getTimeSpan(x: number, y: number) {}
 
   /**
    * Get the x pos of the specified character at a given time.
@@ -162,7 +162,7 @@ export class Graph {
    *
    * @return X
    */
-  getCharacterX(character, timeStep) {}
+  getCharacterX(character: string | number, timeStep: number) {}
 
   /**
    * Get the y pos of the specified character at a given time.
@@ -172,7 +172,7 @@ export class Graph {
    *
    * @return Y
    */
-  getCharacterY(character, timeStep) {}
+  getCharacterY(character: string | number, timeStep: number) {}
 
   /**
    * Get the segment of the specified character at a given time.
@@ -182,7 +182,7 @@ export class Graph {
    *
    * @return segment
    */
-  getSegment(character, timeStep) {}
+  getSegment(character: string | number, timeStep: number) {}
 
   /**
    * Get the storyline of the specified character at a given time.
@@ -192,7 +192,7 @@ export class Graph {
    *
    * @return segment[]
    */
-  getStoryline(character, timeStep) {}
+  getStoryline(character: string | number, timeStep: number) {}
 
   /**
    * Get the segment path of the specified character at a given time.
@@ -202,7 +202,7 @@ export class Graph {
    *
    * @return segmentPath
    */
-  getSegmentPath(character, timeStep) {}
+  getSegmentPath(character: string | number, timeStep: number) {}
 
   /**
    * Get the storyline path of the specified character at a given time.
@@ -212,5 +212,5 @@ export class Graph {
    *
    * @return segmentPath[]
    */
-  getStorylinePath(character, timeStep) {}
+  getStorylinePath(character: string | number, timeStep: number) {}
 }

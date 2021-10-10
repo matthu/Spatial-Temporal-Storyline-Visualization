@@ -3,16 +3,17 @@ import { LayoutRelaxer } from './layoutRelaxer'
 import { Table } from '../data/table'
 import { STYLE_LABELS, BEZIER_SAMPLE_NODES } from '../utils/CONSTANTS'
 import { Story } from '../data/story';
+import { Constraint } from '../data/constraint';
 
 export class PathSmoother {
   styleConfiger: StyleConfiger;
   layoutRelaxer: LayoutRelaxer;
 
-  constructor(story: Story, constraints) {
+  constructor(story: Story, constraints: Constraint[]) {
     this.styleConfiger = new StyleConfiger(story, constraints)
     this.layoutRelaxer = new LayoutRelaxer(story, constraints)
   }
-  genStyle(story: Story, constraints) {
+  genStyle(story: Story, constraints: Constraint[]) {
     return this.styleConfiger.style
   }
   genPosition(story: Story) {
@@ -30,73 +31,75 @@ export class PathSmoother {
         tpos[i][j] = 0
       }
     }
-    for (let i = 0, n = story.getTableRows(); i < n; i++) {
-      let curFlags = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-      for (let j = 0, m = story.getTableCols(); j < m; j++) {
-        if (!charater.value(i, j) || layout.value(i, j) < 0) continue
-        const { lineNodes, curFlag } = this.linkLine(
-          [
+    if (charater && layout) {
+      for (let i = 0, n = story.getTableRows(); i < n; i++) {
+        let curFlags = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        for (let j = 0, m = story.getTableCols(); j < m; j++) {
+          if (!charater.value(i, j) || layout.value(i, j) < 0) continue
+          const { lineNodes, curFlag } = this.linkLine(
             [
-              renderX[i][j][0],
-              moveMark[i][j] ? styleY[i][j] : layout.value(i, j),
-            ],
-            [
-              renderX[i][j][1],
-              moveMark[i][j] ? styleY[i][j] : layout.value(i, j),
-            ],
-          ],
-          (curFlags[style.value(i, j)] & 1) ^ //curnum odd or even
-            (moveMark[i][j] ? styleFlag[i][j] & 1 : 1) //curflag odd or even
-            ? 1
-            : -1,
-          style.value(i, j)
-        )
-        curFlags[style.value(i, j)] += curFlag
-        for (let z = 0; z < lineNodes.length; z++)
-          pos[i][j].push([lineNodes[z][0], lineNodes[z][1]])
-        if (j < m - 1) {
-          if (!charater.value(i, j + 1)) continue
-          const { gapANodes, gapBNodes } = this.linkGap(
-            [
+              [
+                renderX[i][j][0],
+                moveMark[i][j] ? styleY[i][j] : layout.value(i, j),
+              ],
               [
                 renderX[i][j][1],
                 moveMark[i][j] ? styleY[i][j] : layout.value(i, j),
               ],
-              [
-                renderX[i][j + 1][0],
-                moveMark[i][j + 1] ? styleY[i][j + 1] : layout.value(i, j + 1),
-              ],
             ],
-            [style.value(i, j), style.value(i, j + 1)],
-            [
-              (curFlags[style.value(i, j)] & 1) ^
-              (moveMark[i][j] ? styleFlag[i][j] & 1 : 1)
-                ? 1
-                : -1,
-              (curFlags[style.value(i, j + 1)] & 1) ^
-              (moveMark[i][j + 1] ? styleFlag[i][j + 1] & 1 : 1)
-                ? 1
-                : -1,
-            ],
-            curFlags
+            (curFlags[style.value(i, j) as number] & 1) ^ //curnum odd or even
+              (moveMark[i][j] ? styleFlag[i][j] & 1 : 1) //curflag odd or even
+              ? 1
+              : -1,
+            style.value(i, j) as number
           )
-          for (let k = 1; k < gapANodes.length; k++)
-            pos[i][j].push([gapANodes[k][0], gapANodes[k][1]])
-          for (let k = 0; k < gapBNodes.length - 1; k++)
-            pos[i][j + 1].push([gapBNodes[k][0], gapBNodes[k][1]])
+          curFlags[style.value(i, j) as number] += curFlag
+          for (let z = 0; z < lineNodes.length; z++)
+            pos[i][j].push([lineNodes[z][0], lineNodes[z][1]])
+          if (j < m - 1) {
+            if (!charater.value(i, j + 1)) continue
+            const { gapANodes, gapBNodes } = this.linkGap(
+              [
+                [
+                  renderX[i][j][1],
+                  moveMark[i][j] ? styleY[i][j] : layout.value(i, j),
+                ],
+                [
+                  renderX[i][j + 1][0],
+                  moveMark[i][j + 1] ? styleY[i][j + 1] : layout.value(i, j + 1),
+                ],
+              ],
+              [style.value(i, j) as number, style.value(i, j + 1) as number],
+              [
+                (curFlags[style.value(i, j) as number] & 1) ^
+                (moveMark[i][j] ? styleFlag[i][j] & 1 : 1)
+                  ? 1
+                  : -1,
+                (curFlags[style.value(i, j + 1) as number] & 1) ^
+                (moveMark[i][j + 1] ? styleFlag[i][j + 1] & 1 : 1)
+                  ? 1
+                  : -1,
+              ],
+              curFlags
+            )
+            for (let k = 1; k < gapANodes.length; k++)
+              pos[i][j].push([gapANodes[k][0], gapANodes[k][1]])
+            for (let k = 0; k < gapBNodes.length - 1; k++)
+              pos[i][j + 1].push([gapBNodes[k][0], gapBNodes[k][1]])
+          }
         }
       }
-    }
-    story.cleanPositions()
-    for (let i = 0; i < pos.length; i++) {
-      for (let j = 0; j < pos[i].length; j++) {
-        if (charater.value(i, j)) tpos[i][j] = story.addPosition(pos[i][j])
+      story.cleanPositions()
+      for (let i = 0; i < pos.length; i++) {
+        for (let j = 0; j < pos[i].length; j++) {
+          if (charater.value(i, j)) tpos[i][j] = story.addPosition(pos[i][j])
+        }
       }
     }
     const position = new Table(tpos)
     return position
   }
-  linkLine(nodes, flag, styleId) {
+  linkLine(nodes: number[][], flag: number, styleId: number) {
     switch (STYLE_LABELS[styleId]) {
       case 'Zigzag':
         return this.zigzagLinker(nodes, flag)
@@ -112,7 +115,7 @@ export class PathSmoother {
         return this.normalLinker(nodes, flag)
     }
   }
-  linkGap(nodes, styles, flags, curFlags) {
+  linkGap(nodes: number[][], styles: number[], flags: number[], curFlags: number[]) {
     let gapANodes: any[] = []
     let gapBNodes: any[] = []
     if (nodes[0][1] !== nodes[1][1]) {
@@ -135,7 +138,7 @@ export class PathSmoother {
     }
     return { gapANodes, gapBNodes }
   }
-  bezierLinker(nodes, sampleRate = BEZIER_SAMPLE_NODES) {
+  bezierLinker(nodes: number[][], sampleRate = BEZIER_SAMPLE_NODES) {
     let lineNodes: any[] = [],
       p: any[] = []
     if (nodes.length === 2) {
@@ -155,13 +158,13 @@ export class PathSmoother {
     }
     return lineNodes
   }
-  normalLinker(nodes, flag = 1) {
+  normalLinker(nodes: number[][], flag = 1) {
     const lineNodes = nodes
     let curFlag = 0
     return { lineNodes, curFlag }
   }
-  zigzagLinker(nodes, flag = 1, length = 10, height = 4) {
-    let lineNodes: any[] = []
+  zigzagLinker(nodes: number[][], flag = 1, length = 10, height = 4) {
+    let lineNodes: number[][] = []
 
     const tmpLength = nodes[1][0] - nodes[0][0]
     let curFlag = Math.ceil(tmpLength / length)
@@ -179,7 +182,7 @@ export class PathSmoother {
 
     return { lineNodes, curFlag }
   }
-  waveLinker(nodes, flag = 1, length = 10, height = 4, sampleling = 2) {
+  waveLinker(nodes: number[][], flag = 1, length = 10, height = 4, sampleling = 2) {
     let lineNodes: any[] = []
 
     const tmpLength = nodes[1][0] - nodes[0][0]
@@ -199,7 +202,7 @@ export class PathSmoother {
     }
     return { lineNodes, curFlag }
   }
-  bumpLinker(nodes, flag = 1, length = 10, height = 4) {
+  bumpLinker(nodes: number[][], flag = 1, length = 10, height = 4) {
     let lineNodes: any[] = []
     const tmpLength = nodes[1][0] - nodes[0][0]
     let curFlag = Math.ceil(tmpLength / length)
@@ -219,7 +222,7 @@ export class PathSmoother {
 
     return { lineNodes, curFlag }
   }
-  twineLinker(nodes, flag = 1, length = 15, height = 4, sampleling = 2) {
+  twineLinker(nodes: number[][], flag: number = 1, length: number = 15, height: number = 4, sampleling: number = 2) {
     let lineNodes: any[] = []
 
     const tmpLength = nodes[1][0] - nodes[0][0]
@@ -240,7 +243,7 @@ export class PathSmoother {
 
     return { lineNodes, curFlag }
   }
-  collideLinker(nodes, flag = 1, length = 50, height = 2) {
+  collideLinker(nodes: number[][], flag: number = 1, length: number = 50, height: number = 2) {
     let lineNodes: any[] = []
     const curFlag = 0
     lineNodes.push([nodes[0][0], nodes[0][1] + flag * height])
@@ -248,7 +251,7 @@ export class PathSmoother {
 
     return { lineNodes, curFlag }
   }
-  calcBezier(p, t, d) {
+  calcBezier(p: number[][], t: number, d: number) {
     let ret = p[0][d] * (1 - t) * (1 - t) * (1 - t)
     ret += 3 * p[1][d] * t * (1 - t) * (1 - t)
     ret += 3 * p[2][d] * t * t * (1 - t)

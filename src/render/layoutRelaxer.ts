@@ -1,16 +1,31 @@
+import { Constraint } from '../data/constraint';
 import { Story } from '../data/story';
 import { TIME_UNIT, TIME_GAP_RATIO, TWIST_FACTOR } from '../utils/CONSTANTS'
+
+export interface LayoutData {
+  points: LayoutDataPoint[]
+}
+
+export interface LayoutDataPoint {
+  x: number
+  y: number
+}
+
+export interface LayoutCharacterDataPoint {
+  character: number;
+  y: number;
+}
 
 const UP = -1
 const DOWN = 1
 const SAME = 0
 
 export class LayoutRelaxer {
-  _origX: any[];
-  _renderX: any;
+  _origX: number[][][];
+  _renderX: number[][][];
 
-  constructor(story: Story, constraints) {
-    const { origX, renderX } = this.layoutRelax(story, constraints)
+  constructor(story: Story, constraints: Constraint[]) {
+    const { origX, renderX } = {...this.layoutRelax(story, constraints)}
     this._origX = origX
     this._renderX = renderX
   }
@@ -24,33 +39,39 @@ export class LayoutRelaxer {
     const timeline = story.timeline
     const character = story.getTable('character')
     const layout = story.getTable('layout')
-    let originX: any[] = this.newArray(story.getTableRows(), story.getTableCols())
-    for (let i = 0, len = story.getTableRows(); i < len; i++) {
-      for (let j = 0, len = story.getTableCols(); j < len; j++) {
-        originX[i][j] = []
-        if (character.value(i, j) === 0 || layout.value(i, j) < 0) {
-          originX[i][j] = [-1, -1]
-        } else {
-          originX[i][j][0] = timeline[j] * TIME_UNIT
-          originX[i][j][1] =
-            timeline[j + 1] * TIME_UNIT -
-            (timeline[j + 1] - timeline[j]) * TIME_UNIT * TIME_GAP_RATIO
+
+    let originX: number[][][] = this.newArray(story.getTableRows(), story.getTableCols())
+
+    if (character && layout) {
+      for (let i = 0, len = story.getTableRows(); i < len; i++) {
+        for (let j = 0, len = story.getTableCols(); j < len; j++) {
+          originX[i][j] = []
+          if (character.value(i, j) === 0 || layout.value(i, j) < 0) {
+            originX[i][j] = [-1, -1]
+          } else {
+            originX[i][j][0] = timeline[j] * TIME_UNIT
+            originX[i][j][1] =
+              timeline[j + 1] * TIME_UNIT -
+              (timeline[j + 1] - timeline[j]) * TIME_UNIT * TIME_GAP_RATIO
+          }
         }
       }
     }
+
     const origX = originX
     const renderX = this._getRenderX(originX, story)
     return { origX, renderX }
   }
-  _getRenderX(originX, story) {
-    let renderX: any[] = []
+
+  _getRenderX(originX: number[][][], story: Story) {
+    let renderX: number[][][] = []
     const sessionTable = story.getTable('session')
     const twister = new SplineTwister(story, originX)
     const rawRenderX = twister.twist()
     rawRenderX.forEach((charXArr, cIdx) => {
-      let tmpCharXArr: any[] = []
+      let tmpCharXArr: number[][] = []
       for (let tIdx = 0; tIdx < story.getTableCols(); tIdx++) {
-        if (sessionTable.value(cIdx, tIdx) > 0) {
+        if (sessionTable?.value(cIdx, tIdx) as number > 0) {
           const leftIdx = 2 * tIdx
           const rightIdx = leftIdx + 1
           tmpCharXArr.push([
@@ -65,26 +86,26 @@ export class LayoutRelaxer {
     })
     return renderX
   }
-  newArray(n, m) {
-    let ret: any[] = []
+  newArray(n: number, m: number) {
+    let ret: number[][][] = []
     for (let i = 0; i < n; i++) {
       ret[i] = []
-      for (let j = 0; j < m; j++) ret[i][j] = 0
+      for (let j = 0; j < m; j++) ret[i][j] = []
     }
     return ret
   }
 }
 
 export class SplineTwister {
-  data: any[];
+  data: LayoutData[];
 
-  constructor(story: Story, renderX) {
+  constructor(story: Story, renderX: number[][][]) {
     const layoutTable = story.getTable('layout')
     this.data = []
-    renderX.forEach((charXArr, charIdx) => {
-      let tmpCharPoints: any[] = []
+    renderX.forEach((charXArr, charIdx: number) => {
+      let tmpCharPoints: LayoutDataPoint[] = []
       charXArr.forEach((xPair, timeStep) => {
-        const charY = layoutTable.value(charIdx, timeStep)
+        const charY = layoutTable?.value(charIdx, timeStep) as number
         const [xLeft, xRight] = xPair
         tmpCharPoints.push({
           x: xLeft,
@@ -110,10 +131,10 @@ export class SplineTwister {
     let timeframeCount = this.data[0].points.length / 2
     let characterCount = this.data.length
 
-    let characterByOrders: any[] = []
+    let characterByOrders: LayoutCharacterDataPoint[][] = []
     for (let timeframe = 0; timeframe < timeframeCount; timeframe++) {
       let right = timeframe * 2 + 1
-      let characterByOrder: any[] = []
+      let characterByOrder: LayoutCharacterDataPoint[] = []
 
       for (let character = 0; character < characterCount; character++) {
         characterByOrder.push({
@@ -132,10 +153,10 @@ export class SplineTwister {
 
       let characterList = characterByOrders[timeframe]
 
-      let upSet: any[] = []
-      let downSet: any[] = []
-      let up: any[] = []
-      let down: any[] = []
+      let upSet: number[][] = []
+      let downSet: number[][] = []
+      let up: number[] = []
+      let down: number[] = []
       let previousDirection = SAME
       let lastDiff = -1
       let lastY = -1
@@ -241,7 +262,7 @@ export class SplineTwister {
     return data
   }
 
-  fixWrongPosition(data) {
+  fixWrongPosition(data: LayoutData[]) {
     let delta = 20
     let rowLen = data.length
     let colLen = data[0].points.length
@@ -266,11 +287,11 @@ export class SplineTwister {
     }
   }
 
-  cleanUpDownSet(upSet, downSet) {
-    let _upSet: any[] = []
-    let _downSet: any[] = []
+  cleanUpDownSet(upSet: number[][], downSet: number[][]) {
+    let _upSet: number[][] = []
+    let _downSet: number[][] = []
     upSet.forEach(up => {
-      let tmpUp: any[] = []
+      let tmpUp: number[] = []
       up.forEach(c => {
         if (tmpUp.indexOf(c) === -1) {
           tmpUp.push(c)
@@ -315,11 +336,11 @@ export class SplineTwister {
     return true
   }
 
-  static calculateMoveDistance(distance, arc) {
+  static calculateMoveDistance(distance: number, arc: number) {
     return distance * Math.tan(arc / 2)
   }
 
-  static internalTwist(charactersArray, factor, direction, data, right) {
+  static internalTwist(charactersArray: number[], factor: number, direction: number, data: LayoutData[], right: number) {
     let maxXDiff = 0
     let nextLeft = right + 1
     let nextRight = right + 2

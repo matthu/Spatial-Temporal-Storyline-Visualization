@@ -1,6 +1,6 @@
 import * as Snap from 'snapsvg'
 
-export function drawSegmentPath(pathStr, defaultWidth = 2, hoverWidth = 4) {
+export function drawSegmentPath(pathStr: string, defaultWidth = 2, hoverWidth = 4) {
   const svg = Snap('#mySvg')
   const pathSvg = svg.path(pathStr)
   pathSvg.hover(
@@ -25,11 +25,11 @@ export function drawSegmentPath(pathStr, defaultWidth = 2, hoverWidth = 4) {
   return pathSvg
 }
 
-export function drawStorylinePath(storylinePath) {
+export function drawStorylinePath(storylinePath: string[]) {
   storylinePath.forEach(segmentPath => drawSegmentPath(segmentPath))
 }
 
-export function drawStoryline(character, storyline, type = 'simple') {
+export function drawStoryline(character: string, storyline: number[][][], type = 'simple') {
   storyline.forEach((segment, idx) => {
     let segmentPath = ''
     switch (type) {
@@ -47,7 +47,7 @@ export function drawStoryline(character, storyline, type = 'simple') {
   })
 }
 
-function generateSimplePath(points) {
+function generateSimplePath(points: number[][]) {
   if (points.length === 0) return ''
   let pathStr = `M ${points[0][0]} ${points[0][1]}`
   for (let i = 1, len = points.length; i < len; i++) {
@@ -56,7 +56,7 @@ function generateSimplePath(points) {
   return pathStr
 }
 
-function generateBezierPath(points) {
+function generateBezierPath(points: number[][]) {
   if (points.length < 4) return generateSimplePath(points)
   const pointsNum = points.length
   let i = 0

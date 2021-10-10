@@ -101,12 +101,12 @@ export default class iStoryline {
     this._story.dump(fileName, 'json')
   }
 
-  addCharacter(character: string, timeRange) {
+  addCharacter(character: string, timeRange: number[][]) {
     this._story.addCharacter(character, timeRange)
     return this._layout()
   }
 
-  changeCharacter(character: string | number, timeRange) {
+  changeCharacter(character: string | number, timeRange: number[][]) {
     this._story.changeCharacter(character, timeRange)
     return this._layout()
   }
@@ -127,7 +127,7 @@ export default class iStoryline {
   //   return this._layout()
   // }
 
-  addLocation(location: string, characters, timeRange) {
+  addLocation(location: string, characters: number[], timeRange: number[][]) {
     this._story.changeLocation(location, characters, timeRange)
     return this._layout()
   }
@@ -365,7 +365,7 @@ export default class iStoryline {
    *
    * @return graph
    */
-  stylish(names: string[], timeSpan: number[], style) {
+  stylish(names: string[], timeSpan: number[], style: ConstraintStyle) {
     if (names.length === 1 && timeSpan.length === 2) {
       this._constraintStore.add(names, timeSpan, style, {})
     } else {
